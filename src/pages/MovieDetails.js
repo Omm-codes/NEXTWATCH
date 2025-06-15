@@ -12,6 +12,7 @@ const MovieDetails = () => {
   const [error, setError] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showMoviePlayer, setShowMoviePlayer] = useState(false); // Add this new state
   const [trailerKey, setTrailerKey] = useState(null);
   const [trailerLoading, setTrailerLoading] = useState(false);
   const [showFullOverview, setShowFullOverview] = useState(false);
@@ -103,15 +104,35 @@ const MovieDetails = () => {
     setTrailerLoading(false);
   };
 
+  const closeMoviePlayer = () => {
+    setShowMoviePlayer(false);
+  };
+
+  const handleWatchMovie = (movieTitle) => {
+    // Show a loading/redirect modal briefly before opening the external site
+    setShowMoviePlayer(true);
+    
+    // Add a small delay to show the redirect message
+    setTimeout(() => {
+      window.open('https://netfree2.cc/home', '_blank');
+      setShowMoviePlayer(false);
+    }, 2000);
+  };
+
   // Keyboard event listener for ESC key
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && showTrailer) {
-        closeTrailer();
+      if (event.key === 'Escape') {
+        if (showTrailer) {
+          closeTrailer();
+        }
+        if (showMoviePlayer) {
+          closeMoviePlayer();
+        }
       }
     };
 
-    if (showTrailer) {
+    if (showTrailer || showMoviePlayer) {
       document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     }
@@ -120,7 +141,7 @@ const MovieDetails = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [showTrailer]);
+  }, [showTrailer, showMoviePlayer]);
 
   if (loading) {
     return (
@@ -178,6 +199,26 @@ const MovieDetails = () => {
 
   return (
     <div className="movie-details-page">
+      {/* Movie Player Modal - Now shows redirect message */}
+      {showMoviePlayer && (
+        <div className="trailer-modal" onClick={closeMoviePlayer}>
+          <div className="trailer-content redirect-content" onClick={e => e.stopPropagation()}>
+            <button className="trailer-close" onClick={closeMoviePlayer}>
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+            
+            <div className="redirect-message">
+              <div className="redirect-spinner"></div>
+              <h2>Redirecting to Watch "{movie.title}"</h2>
+              <p>Opening streaming site in a new tab...</p>
+              <p className="redirect-note">If the page doesn't open automatically, please allow pop-ups for this site.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Trailer Modal */}
       {showTrailer && (
         <div className="trailer-modal" onClick={closeTrailer}>
@@ -314,8 +355,18 @@ const MovieDetails = () => {
             
             <div className="action-buttons">
               <button 
-                onClick={handleWatchTrailer} 
+                onClick={() => handleWatchMovie(movie.title)} 
                 className="btn btn-primary btn-large"
+              >
+                <svg className="btn-icon" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                Watch Now
+              </button>
+              
+              <button 
+                onClick={handleWatchTrailer} 
+                className="btn btn-secondary btn-large"
                 disabled={trailerLoading}
               >
                 <svg className="btn-icon" viewBox="0 0 24 24">

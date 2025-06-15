@@ -592,6 +592,55 @@
   margin-top: 25px;
 }
 
+/* Redirect Modal Styles */
+.redirect-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 17, 17, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.redirect-message {
+  text-align: center;
+  color: white;
+  max-width: 500px;
+  padding: 40px;
+}
+
+.redirect-message h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #e50914;
+}
+
+.redirect-message p {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  opacity: 0.9;
+}
+
+.redirect-note {
+  font-size: 0.9rem !important;
+  color: #b3b3b3 !important;
+  margin-top: 20px !important;
+}
+
+.redirect-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(229, 9, 20, 0.2);
+  border-left: 4px solid #e50914;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 30px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .hero-content {
