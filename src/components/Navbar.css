@@ -1,0 +1,769 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: all 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+  background: transparent; /* Made transparent */
+  backdrop-filter: none; /* Removed backdrop filter */
+  -webkit-backdrop-filter: none;
+  padding: 0.3rem 0;
+  box-shadow: none; /* Removed box shadow */
+}
+
+/* Auto-hide states - now using transparency */
+.navbar-visible {
+  transform: translateY(0);
+  opacity: 1;
+  background: transparent;
+}
+
+.navbar-hidden {
+  transform: translateY(0);
+  opacity: 0.4; /* More transparent when hidden */
+  background: transparent;
+  pointer-events: auto;
+}
+
+.navbar-hidden .navbar-container {
+  opacity: 0.5; /* Make content more transparent */
+}
+
+/* Keep navbar fully visible when mobile menu is open */
+.navbar-mobile-open {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  background: rgba(17, 17, 17, 0.95) !important; /* Add background when mobile menu is open */
+  backdrop-filter: blur(10px) !important;
+  pointer-events: auto !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+.navbar-mobile-open .navbar-container {
+  opacity: 1 !important;
+}
+
+/* Hover area to trigger navbar visibility */
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: -30px; /* Increased hover area */
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.navbar-scrolled {
+  background: transparent; /* Keep transparent when scrolled */
+  padding: 0.2rem 0;
+  box-shadow: none; /* No shadow */
+}
+
+.navbar-scrolled.navbar-hidden {
+  background: transparent;
+}
+
+/* Ensure smooth transitions */
+.navbar * {
+  transition: inherit;
+}
+
+/* Show navbar on focus within (for keyboard navigation) */
+.navbar:focus-within {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  background: rgba(17, 17, 17, 0.8) !important; /* Add slight background on focus */
+  backdrop-filter: blur(5px) !important;
+  pointer-events: auto !important;
+}
+
+.navbar:focus-within .navbar-container {
+  opacity: 1 !important;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 3.5rem;
+   /* Shift logo to the right */
+  
+}
+
+.logo-image {
+  height: 4rem; /* Increased from 2.5rem to make it larger */
+  width: auto;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 8px rgba(229, 9, 20, 0.3));
+}
+
+.logo-image:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 12px rgba(229, 9, 20, 0.4));
+}
+
+/* Remove the old logo styles */
+.logo-icon {
+  display: none;
+}
+
+.navbar-brand h1 {
+  display: none;
+}
+
+.navbar-menu {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-links a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.9); /* Increased opacity for better visibility */
+  font-weight: 600; /* Increased font weight */
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); /* Added text shadow for better visibility */
+}
+
+.navbar-links a:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.15); /* More visible background on hover */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Added shadow */
+}
+
+.navbar-links a.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.2); /* More visible background for active state */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: linear-gradient(to right, #e50914, #b20710);
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(229, 9, 20, 0.5); /* Added glow */
+}
+
+.nav-icon {
+  width: 1rem; /* Reduced icon size */
+  height: 1rem;
+  fill: currentColor;
+}
+
+.navbar-search {
+  position: relative;
+  margin: 0 0.5rem;
+}
+
+.search-input-container {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4); /* Darker background for better contrast */
+  border-radius: 12px;
+  padding: 0.4rem 0.6rem;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.2); /* More visible border */
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Added shadow */
+  position: relative;
+  overflow: hidden;
+}
+
+.search-input-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.search-input-container:hover::before {
+  left: 100%;
+}
+
+.search-input-container:focus-within {
+  background: rgba(0, 0, 0, 0.6); /* Darker on focus */
+  border-color: rgba(229, 9, 20, 0.8);
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2), 0 4px 20px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.search-input-container:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.search-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: rgba(255, 255, 255, 0.7);
+  margin-right: 0.6rem;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.search-input-container:focus-within .search-icon {
+  fill: #e50914;
+  transform: scale(1.1);
+}
+
+.navbar-search input {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  outline: none;
+  width: 180px;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  transition: all 0.3s ease;
+}
+
+.navbar-search input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.navbar-search input:focus::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-button {
+  background: linear-gradient(135deg, #e50914, #f40612);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+  box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.search-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.3s ease;
+}
+
+.search-button:hover::before {
+  left: 100%;
+}
+
+.search-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f40612, #ff1744);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+}
+
+.search-button:active {
+  transform: translateY(0) scale(1.02);
+}
+
+.search-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.search-button:disabled:hover {
+  transform: none;
+}
+
+.search-submit-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: white;
+  transition: transform 0.3s ease;
+}
+
+.search-button:hover:not(:disabled) .search-submit-icon {
+  transform: scale(1.1);
+}
+
+.auth-links {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.auth-link {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); /* Added text shadow */
+}
+
+.auth-link.login {
+  color: white;
+  background: rgba(0, 0, 0, 0.4); /* Darker background */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* More visible border */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.auth-link.login:hover {
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.auth-link.signup {
+  color: white;
+  background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); /* Enhanced shadow */
+}
+
+.auth-link.signup:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5);
+}
+
+.navbar-toggler {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+}
+
+.navbar-toggler span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: white;
+  transition: all 0.3s ease;
+  transform-origin: 1px;
+}
+
+.navbar-toggler.active span:first-child {
+  transform: rotate(45deg);
+  width: 28px;
+}
+
+.navbar-toggler.active span:nth-child(2) {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.navbar-toggler.active span:last-child {
+  transform: rotate(-45deg);
+  width: 28px;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 999;
+}
+
+/* Search Suggestions Dropdown */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: rgba(17, 17, 17, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1001;
+  max-height: 400px;
+  overflow-y: auto;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+  background: rgba(229, 9, 20, 0.1);
+  border-color: rgba(229, 9, 20, 0.2);
+}
+
+.suggestion-poster {
+  width: 32px;
+  height: 48px;
+  margin-right: 0.75rem;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.suggestion-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-poster {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-poster svg {
+  width: 16px;
+  height: 16px;
+  fill: rgba(255, 255, 255, 0.4);
+}
+
+.suggestion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-title {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-year {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.suggestion-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #ffd700;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.star-icon {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.suggestion-item.view-all {
+  background: rgba(229, 9, 20, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: center;
+  padding: 1rem;
+}
+
+.suggestion-item.view-all:hover {
+  background: rgba(229, 9, 20, 0.15);
+}
+
+.view-all-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.view-all-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Scrollbar for suggestions */
+.search-suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+  background: rgba(229, 9, 20, 0.6);
+  border-radius: 3px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+  background: rgba(229, 9, 20, 0.8);
+}
+
+/* Enhanced mobile responsive behavior */
+@media (max-width: 1024px) {
+  .logo-container {
+    margin-left: 0.75rem; /* Slightly less margin on tablet */
+  }
+  
+  .logo-image {
+    height: 2.75rem; /* Slightly smaller on tablet */
+  }
+  
+  .navbar-search input {
+    width: 140px;
+  }
+  
+  .search-input-container {
+    padding: 0.35rem 0.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .logo-container {
+    margin-left: 0.5rem; /* Less margin on mobile */
+  }
+  
+  .logo-image {
+    height: 2.5rem; /* Standard mobile size */
+  }
+  
+  .navbar-toggler {
+    display: flex;
+  }
+
+  /* Keep mobile navbar more visible */
+  .navbar-hidden {
+    transform: translateY(0);
+    opacity: 0.6; /* More visible on mobile */
+    background: transparent;
+  }
+
+  .navbar-hidden:hover,
+  .navbar-hidden:focus-within {
+    transform: translateY(0);
+    opacity: 1;
+    background: rgba(17, 17, 17, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .navbar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    max-width: 85%;
+    height: 100vh;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 6rem 2rem 2rem;
+    background: rgba(17, 17, 17, 0.98);
+    backdrop-filter: blur(15px); /* Enhanced blur for mobile menu */
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5); /* Enhanced shadow */
+    transition: right 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+
+  .navbar-menu.open {
+    right: 0;
+  }
+
+  .navbar-links {
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .navbar-links a {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05); /* Added background for mobile links */
+    margin-bottom: 0.5rem;
+  }
+
+  .navbar-links a:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .navbar-links a.active {
+    background: rgba(229, 9, 20, 0.2);
+  }
+
+  .navbar-search {
+    width: 100%;
+    margin: 0 0 2rem 0;
+  }
+  
+  .search-input-container {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+  }
+  
+  .navbar-search input {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.6rem 0;
+  }
+  
+  .search-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-right: 0.8rem;
+  }
+  
+  .search-button {
+    padding: 0.5rem;
+    margin-left: 0.6rem;
+  }
+  
+  .search-submit-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  
+  .search-suggestions {
+    position: relative;
+    top: 0.5rem;
+    margin-bottom: 1rem;
+    max-height: 300px;
+  }
+  
+  .suggestion-item {
+    padding: 1rem 0.75rem;
+  }
+  
+  .suggestion-poster {
+    width: 36px;
+    height: 54px;
+    margin-right: 1rem;
+  }
+  
+  .suggestion-title {
+    font-size: 1rem;
+  }
+  
+  .suggestion-year {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-image {
+    height: 2rem; /* Smaller on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-container {
+    margin-left: 0.25rem; /* Minimal margin on small screens */
+  }
+  
+  .logo-image {
+    height: 2.25rem; /* Slightly smaller on very small screens */
+  }
+  
+  .search-input-container {
+    padding: 0.5rem 0.7rem;
+  }
+  
+  .navbar-search input {
+    font-size: 0.95rem;
+  }
+  
+  .search-button {
+    padding: 0.45rem;
+  }
+}
+
+/* Remove the hidden indicator since navbar is always visible */
+@media (min-width: 901px) {
+  .navbar-hidden::after {
+    display: none; /* Remove the pulse indicator */
+  }
+}

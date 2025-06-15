@@ -1,0 +1,254 @@
+.movie-card-wrapper {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.movie-card-wrapper:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  border-color: rgba(229, 9, 20, 0.3);
+}
+
+.movie-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.movie-card-poster-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background-color: #2a2a2a;
+}
+
+.movie-card-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.movie-card-wrapper:hover .movie-card-poster {
+  transform: scale(1.05);
+}
+
+/* Rating badge */
+.movie-card-rating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(229, 9, 20, 0.9);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.movie-card-star-icon {
+  width: 12px;
+  height: 12px;
+  fill: #ffd700;
+  margin-right: 4px;
+}
+
+/* Watchlist button */
+.watchlist-button {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0;
+  backdrop-filter: blur(10px);
+}
+
+.movie-card-wrapper:hover .watchlist-button {
+  opacity: 1;
+}
+
+.watchlist-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.watchlist-button.in-watchlist {
+  background-color: #e50914;
+  border-color: #e50914;
+  opacity: 1;
+}
+
+.watchlist-button.in-watchlist:hover {
+  background-color: #f40612;
+}
+
+.watchlist-icon {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+/* Movie info section */
+.movie-card-info {
+  padding: 16px;
+  background-color: #1a1a1a;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.movie-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: calc(1rem * 1.3 * 2);
+}
+
+.movie-card-year {
+  font-size: 0.85rem;
+  color: #b3b3b3;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .movie-card-wrapper {
+    border-radius: 10px;
+  }
+  
+  .movie-card-wrapper:hover {
+    transform: translateY(-4px);
+  }
+  
+  .movie-card-info {
+    padding: 12px;
+  }
+  
+  .movie-card-title {
+    font-size: 0.9rem;
+  }
+  
+  .watchlist-button {
+    opacity: 1;
+    width: 32px;
+    height: 32px;
+    bottom: 8px;
+    right: 8px;
+  }
+  
+  .watchlist-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .movie-card-rating {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    top: 8px;
+    right: 8px;
+  }
+  
+  .movie-card-star-icon {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-card-wrapper {
+    border-radius: 8px;
+  }
+  
+  .movie-card-info {
+    padding: 10px;
+  }
+  
+  .movie-card-title {
+    font-size: 0.85rem;
+  }
+  
+  .movie-card-year {
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: light) {
+  .movie-card-wrapper {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .movie-card-wrapper:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .movie-card-info {
+    background-color: #ffffff;
+  }
+  
+  .movie-card-title {
+    color: #333333;
+  }
+  
+  .movie-card-year {
+    color: #666666;
+  }
+}
+
+/* Performance optimizations */
+.movie-card-wrapper {
+  will-change: transform;
+}
+
+.movie-card-poster {
+  will-change: transform;
+}
+
+/* Accessibility */
+.movie-card-wrapper:focus-within {
+  outline: 2px solid #e50914;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-card-wrapper,
+  .movie-card-poster,
+  .watchlist-button {
+    transition: none !important;
+    animation: none !important;
+  }
+}

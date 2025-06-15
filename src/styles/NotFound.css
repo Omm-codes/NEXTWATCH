@@ -1,0 +1,56 @@
+.not-found-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.not-found-content {
+  max-width: 600px;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.not-found-content h1 {
+  font-size: 5rem;
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.not-found-content h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.not-found-content p {
+  margin-bottom: 30px;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .not-found-content h1 {
+    font-size: 4rem;
+  }
+  
+  .not-found-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .not-found-actions {
+    flex-direction: column;
+  }
+}
