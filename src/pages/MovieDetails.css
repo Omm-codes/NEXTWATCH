@@ -598,123 +598,488 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 30px;
+    gap: 2rem;
+    padding: 40px 3% 40px;
   }
   
   .hero-poster {
-    width: 250px;
-    height: 375px;
+    width: 220px;
+    height: 330px;
   }
   
   .movie-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+  }
+  
+  .rating-circle {
+    width: 70px;
+    height: 70px;
+    bottom: -15px;
+    right: -15px;
+  }
+  
+  .rating-value {
+    font-size: 1.1rem;
   }
 }
 
 @media (max-width: 768px) {
   .hero-section {
     height: auto;
-    min-height: 500px;
+    min-height: 400px;
+    padding-bottom: 2rem;
   }
   
   .hero-content {
-    padding: 40px 4% 40px;
+    padding: 2rem 1rem;
+    gap: 1.5rem;
   }
   
   .hero-poster {
-    width: 200px;
-    height: 300px;
+    width: 180px;
+    height: 270px;
   }
   
   .rating-circle {
     width: 60px;
     height: 60px;
-    bottom: -15px;
-    right: -15px;
+    bottom: -12px;
+    right: -12px;
   }
   
   .rating-value {
     font-size: 1rem;
   }
   
+  .rating-label {
+    font-size: 0.65rem;
+  }
+  
   .movie-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
   }
   
   .movie-meta {
     flex-direction: column;
-    gap: 10px;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .meta-item {
+    justify-content: center;
+  }
+  
+  .genres {
+    justify-content: center;
   }
   
   .action-buttons {
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .btn-large {
+    width: 100%;
+    max-width: 300px;
   }
   
   .details-section {
-    padding: 40px 4%;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-poster {
-    width: 150px;
-    height: 225px;
+    padding: 2rem 1rem;
   }
   
-  .movie-title {
+  .section-title {
     font-size: 1.5rem;
-  }
-}
-
-/* Performance optimizations */
-.hero-backdrop {
-  will-change: transform;
-}
-
-.hero-poster {
-  will-change: transform;
-}
-
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-  .movie-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 20px;
   }
   
   .cast-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+  
+  .cast-card {
+    padding: 1rem;
+  }
+  
+  .cast-photo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .default-cast-photo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .default-cast-photo svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .cast-name {
+    font-size: 0.9rem;
+  }
+  
+  .cast-character {
+    font-size: 0.8rem;
   }
   
   .movies-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
   }
+  
+  .trailer-close {
+    top: -50px;
+    right: -5px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .trailer-close svg {
+    width: 18px;
+    height: 18px;
+  }
+}
 
-
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .hero-section {
+    min-height: 350px;
+  }
+  
+  .hero-content {
+    padding: 1.5rem 0.75rem;
+    gap: 1rem;
+  }
+  
   .hero-poster {
-    width: 150px;
-    height: 225px;
+    width: 140px;
+    height: 210px;
+  }
+  
+  .rating-circle {
+    width: 50px;
+    height: 50px;
+    bottom: -10px;
+    right: -10px;
+  }
+  
+  .rating-value {
+    font-size: 0.9rem;
+  }
+  
+  .rating-label {
+    font-size: 0.6rem;
+  }
+  
+  .movie-badges {
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
   }
   
   .movie-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
   }
   
-  .movie-stats {
-    grid-template-columns: 1fr;
+  .release-year {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+  }
+  
+  .movie-meta {
+    gap: 0.5rem;
+  }
+  
+  .meta-item {
+    font-size: 0.85rem;
+  }
+  
+  .meta-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .genres {
+    gap: 0.5rem;
+  }
+  
+  .genre-tag {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .tagline {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .overview-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .overview-section p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  .action-buttons {
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .btn-large {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    max-width: 280px;
+  }
+  
+  .btn-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .details-section {
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
   }
   
   .cast-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .cast-card {
+    padding: 0.75rem;
+  }
+  
+  .cast-photo,
+  .default-cast-photo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .default-cast-photo svg {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .cast-name {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .cast-character {
+    font-size: 0.75rem;
+  }
+  
+  .crew-item {
+    padding: 1rem;
+  }
+  
+  .crew-item h4 {
+    font-size: 1rem;
+  }
+  
+  .crew-item p {
+    font-size: 0.9rem;
+  }
+  
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .trailer-content {
+    width: 95%;
+    margin: 0 auto;
+  }
+  
+  .trailer-close {
+    top: -40px;
+    right: 0;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .trailer-close svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    min-height: 300px;
+  }
+  
+  .hero-content {
+    padding: 1rem 0.5rem;
+    gap: 0.75rem;
+  }
+  
+  .hero-poster {
+    width: 120px;
+    height: 180px;
+  }
+  
+  .rating-circle {
+    width: 45px;
+    height: 45px;
+    bottom: -8px;
+    right: -8px;
+  }
+  
+  .rating-value {
+    font-size: 0.8rem;
+  }
+  
+  .rating-label {
+    font-size: 0.55rem;
+  }
+  
+  .movie-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .release-year {
+    font-size: 0.8rem;
+  }
+  
+  .movie-meta {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .meta-item {
+    font-size: 0.8rem;
+    min-width: fit-content;
+  }
+  
+  .badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+  
+  .genre-tag {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .tagline {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .overview-section h3 {
+    font-size: 1rem;
+  }
+  
+  .overview-section p {
+    font-size: 0.9rem;
+  }
+  
+  .btn-large {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    max-width: 250px;
+  }
+  
+  .btn-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .details-section {
+    padding: 1rem 0.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .cast-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .cast-card {
+    padding: 0.5rem;
+  }
+  
+  .cast-photo,
+  .default-cast-photo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .default-cast-photo svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .cast-name {
+    font-size: 0.8rem;
+  }
+  
+  .cast-character {
+    font-size: 0.7rem;
+  }
+  
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .trailer-close {
+    top: -35px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .trailer-close svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 375px) {
+  .hero-poster {
+    width: 100px;
+    height: 150px;
+  }
+  
+  .movie-title {
+    font-size: 1.1rem;
+  }
+  
+  .btn-large {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .cast-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+  
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
 
