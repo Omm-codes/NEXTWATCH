@@ -5,6 +5,7 @@ import './styles/App.css'; // Updated import path
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import Home from './pages/Home';
@@ -12,6 +13,7 @@ import Movies from './pages/Movies';
 import TVShows from './pages/TVShows';
 import WebSeries from './pages/WebSeries';
 import MovieDetails from './pages/MovieDetails';
+import TVShowDetails from './pages/TVShowDetails';
 import Search from './pages/Search';
 import Watchlist from './pages/Watchlist';
 import MoviePicker from './pages/WhatToWatch';
@@ -35,6 +37,7 @@ function App() {
   return (
     <Router>
       <div className={`App ${theme}`}>
+        <ScrollToTop />
         <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
         <main className="main-content">
           <Routes>
@@ -43,6 +46,7 @@ function App() {
             <Route path="/tv" element={<TVShows />} />
             <Route path="/webseries" element={<WebSeries />} />
             <Route path="/movie/:id" element={<MovieDetails />} />
+            <Route path="/tv/:id" element={<TVShowDetails />} />
             <Route path="/search" element={<Search />} />
             <Route path="/watchlist" element={<Watchlist />} />
             <Route path="/WhatToWatch" element={<MoviePicker />} />

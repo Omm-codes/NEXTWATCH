@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
+import { MovieCardSkeleton } from '../components/LoadingSkeleton';
 import { 
   getPopularMovies, 
   getTopRatedMovies, 
@@ -99,6 +100,12 @@ const Movies = () => {
 
     fetchMovies();
   }, [category, genreId, currentPage]);
+
+  // Add media_type to movies before rendering
+  const moviesWithMediaType = movies.map(movie => ({
+    ...movie,
+    media_type: 'movie'
+  }));
 
   const handlePageChange = (page) => {
     if (page !== currentPage && page >= 1 && page <= totalPages) {
@@ -231,9 +238,12 @@ const Movies = () => {
       </div>
       
       {loading ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading movies...</p>
+        <div className="skeleton-grid">
+          {Array.from({ length: 20 }).map((_, index) => (
+            <div key={index} className="skeleton-stagger">
+              <MovieCardSkeleton />
+            </div>
+          ))}
         </div>
       ) : error ? (
         <div className="error-container">
@@ -260,8 +270,14 @@ const Movies = () => {
           ) : (
             <>
               <div className="movies-grid">
-                {movies.map(movie => (
-                  <MovieCard key={movie.id} movie={movie} />
+                {moviesWithMediaType.map((movie, index) => (
+                  <div 
+                    key={movie.id} 
+                    className="animate-card"
+                    style={{ animationDelay: `${index * 0.02}s` }}
+                  >
+                    <MovieCard movie={movie} />
+                  </div>
                 ))}
               </div>
               

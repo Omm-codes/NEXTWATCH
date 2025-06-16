@@ -183,7 +183,17 @@ const Navbar = () => {
   };
 
   const handleSuggestionClick = (movie) => {
-    navigate(`/movie/${movie.id}`);
+    // Scroll to top immediately
+    window.scrollTo(0, 0);
+    
+    // Check if it's a TV show based on available properties
+    const isTV = movie.media_type === 'tv' || movie.first_air_date || movie.name;
+    
+    if (isTV) {
+      navigate(`/tv/${movie.id}`);
+    } else {
+      navigate(`/movie/${movie.id}`);
+    }
     setSearchQuery('');
     setShowSuggestions(false);
     setSelectedSuggestion(-1);

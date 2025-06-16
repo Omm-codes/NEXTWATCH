@@ -18,6 +18,12 @@
   padding: 6rem 1.5rem 2rem;
   min-height: 100vh;
   text-align: left; /* Ensure consistent left alignment */
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Header and Filter Controls */
@@ -463,6 +469,35 @@
   fill: currentColor;
 }
 
+/* Simple Animation Classes */
+.animate-card {
+  animation: slideUp 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.movies-page {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading grid */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .movies-page {
@@ -580,5 +615,15 @@
   
   .loading-container p {
     font-size: 0.85rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-card,
+  .movies-page {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

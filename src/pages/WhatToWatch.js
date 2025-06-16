@@ -150,7 +150,11 @@ const MoviePicker = () => {
         
         // Filter by time available (for movies, check runtime in future API call)
         const movieCount = timeAvailable === 'short' ? 3 : timeAvailable === 'binge' ? 8 : 6;
-        recommendations.push(...filteredMovies.slice(0, movieCount));
+        const moviesWithMediaType = filteredMovies.slice(0, movieCount).map(movie => ({
+          ...movie,
+          media_type: 'movie'
+        }));
+        recommendations.push(...moviesWithMediaType);
       }
       
       // TV Show recommendations

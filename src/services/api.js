@@ -134,14 +134,34 @@ export const getOnTheAirTVShows = (page = 1) => {
   return getApiData('/tv/on_the_air', { page });
 };
 
-export const getTVShowDetails = (id) => {
-  return getApiData(`/tv/${id}`, {
-    append_to_response: 'credits,videos,images,recommendations'
-  });
+export const getTVShowDetails = async (id) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=credits,recommendations`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching TV show details:', error);
+    throw error;
+  }
 };
 
-export const getTVShowVideos = (id) => {
-  return getApiData(`/tv/${id}/videos`);
+export const getTVShowVideos = async (id) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/${id}/videos?api_key=${API_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching TV show videos:', error);
+    throw error;
+  }
 };
 
 // Web Series (using TV shows with specific genres)

@@ -271,8 +271,8 @@ const Watchlist = () => {
               </h3>
               <p>
                 {activeTab === 'towatch'
-                  ? 'Start adding movies to keep track of what you want to watch'
-                  : 'Mark movies as watched to keep track of what you\'ve seen'
+                  ? 'Start adding content to keep track of what you want to watch'
+                  : 'Mark content as watched to keep track of what you\'ve seen'
                 }
               </p>
             </div>

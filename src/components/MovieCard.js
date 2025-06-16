@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { API_IMAGE_URL, POSTER_SIZE } from '../services/api';
 import defaultMoviePoster from '../assets/default-movie.png';
 import './MovieCard.css';
 
 const MovieCard = ({ movie }) => {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const navigate = useNavigate();
   
   const posterPath = movie.poster_path
     ? `${API_IMAGE_URL}${POSTER_SIZE.MEDIUM}${movie.poster_path}`
@@ -16,15 +16,15 @@ const MovieCard = ({ movie }) => {
     ? new Date(movie.release_date).getFullYear()
     : 'N/A';
 
-  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
   
-  // Check if movie is in watchlist when component mounts
+  // Check if movie is in watchlist
   useEffect(() => {
     const watchlist = JSON.parse(localStorage.getItem('nextwatch-watchlist')) || [];
     setIsInWatchlist(watchlist.some(item => item.id === movie.id));
   }, [movie.id]);
 
-  // Handle adding/removing from watchlist
+  // Handle watchlist toggle
   const handleWatchlistToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -32,26 +32,23 @@ const MovieCard = ({ movie }) => {
     let watchlist = JSON.parse(localStorage.getItem('nextwatch-watchlist')) || [];
     
     if (isInWatchlist) {
-      // Remove from watchlist
       watchlist = watchlist.filter(item => item.id !== movie.id);
       setIsInWatchlist(false);
     } else {
-      // Add to watchlist
       const movieToAdd = {
         id: movie.id,
         title: movie.title,
         poster_path: movie.poster_path,
         release_date: movie.release_date,
         vote_average: movie.vote_average,
-        overview: movie.overview
+        overview: movie.overview,
+        media_type: movie.media_type || 'movie'
       };
       watchlist.push(movieToAdd);
       setIsInWatchlist(true);
     }
     
     localStorage.setItem('nextwatch-watchlist', JSON.stringify(watchlist));
-    
-    // Dispatch custom event for same-tab updates
     window.dispatchEvent(new CustomEvent('watchlistUpdated'));
   };
 
@@ -60,21 +57,38 @@ const MovieCard = ({ movie }) => {
     e.target.src = defaultMoviePoster;
   };
 
+  // Get details route based on media type
+  const getDetailsRoute = () => {
+    const mediaType = movie.media_type || 'movie';
+    switch (mediaType) {
+      case 'tv':
+      case 'webseries':
+        return `/tv/${movie.id}`;
+      default:
+        return `/movie/${movie.id}`;
+    }
+  };
+
+  const handleCardClick = (e) => {
+    e.preventDefault();
+    window.scrollTo(0, 0);
+    navigate(getDetailsRoute());
+  };
+
   return (
     <div className="movie-card-wrapper">
-      <Link to={`/movie/${movie.id}`} className="movie-card-link">
+      <Link to={getDetailsRoute()} className="movie-card-link" onClick={handleCardClick}>
         <div className="movie-card-poster-container">
           <img
             src={posterPath}
             alt={`${movie.title} poster`}
             className="movie-card-poster"
             loading="lazy"
-            onLoad={() => setImageLoaded(true)}
             onError={handleImageError}
           />
           
-          {/* Rating badge */}
-          {rating !== 'N/A' && (
+          {/* Rating badge - only show if rating exists */}
+          {rating && parseFloat(rating) > 0 && (
             <div className="movie-card-rating">
               <svg className="movie-card-star-icon" viewBox="0 0 24 24">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -112,3 +126,5 @@ const MovieCard = ({ movie }) => {
 };
 
 export default MovieCard;
+        
+        
