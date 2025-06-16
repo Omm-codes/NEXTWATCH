@@ -335,17 +335,17 @@
 
 .auth-links {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.4rem; /* Reduced from 0.5rem */
 }
 
 .auth-link {
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Reduced from 0.85rem */
   font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.35rem 0.7rem; /* Reduced padding further */
+  border-radius: 5px; /* Slightly smaller border radius */
   transition: all 0.2s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); /* Added text shadow */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .auth-link.login {
@@ -765,5 +765,178 @@
 @media (min-width: 901px) {
   .navbar-hidden::after {
     display: none; /* Remove the pulse indicator */
+  }
+}
+
+/* User Menu Styles */
+.user-menu {
+  position: relative;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem; /* Reduced from 0.2rem */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.05rem; /* Reduced from 0.1rem */
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.avatar-circle {
+  width: 18px; /* Reduced from 20px */
+  height: 18px; /* Reduced from 20px */
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e50914, #f40612);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Reduced border opacity */
+}
+
+.avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-circle span {
+  color: white;
+  font-weight: 600;
+  font-size: 0.5rem; /* Reduced from 0.6rem */
+  text-transform: uppercase;
+}
+
+.dropdown-arrow {
+  width: 8px; /* Reduced from 10px */
+  height: 8px; /* Reduced from 10px */
+  fill: rgba(255, 255, 255, 0.7);
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  background: rgba(17, 17, 17, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1001;
+  animation: slideDown 0.2s ease-out;
+  overflow: hidden;
+}
+
+.user-info {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.dropdown-item.logout {
+  color: #e53935;
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(229, 57, 53, 0.1);
+  color: #e53935;
+}
+
+.dropdown-item svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* Mobile User Menu */
+@media (max-width: 900px) {
+  .user-dropdown {
+    position: relative;
+    top: 0;
+    right: auto;
+    margin-top: 1rem;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .user-avatar {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    gap: 0.75rem;
+  }
+
+  .avatar-circle {
+    width: 22px; /* Reduced from 26px for mobile */
+    height: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .avatar-circle span {
+    font-size: 0.65rem; /* Reduced from 0.75rem for mobile */
+  }
+
+  .dropdown-arrow {
+    width: 10px; /* Reduced from 12px for mobile */
+    height: 10px;
   }
 }

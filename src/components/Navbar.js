@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { searchMovies } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { logoutUser } from '../services/firebase';
 import logo from '../assets/logo.png';
 import './Navbar.css';;
 
@@ -13,15 +15,19 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef(null);
   const suggestionsRef = useRef(null);
   const searchTimeoutRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   useEffect(() => {
     // Close mobile menu when route changes
     setMobileMenuOpen(false);
+    setShowUserMenu(false);
   }, [location.pathname]);
 
   // Auto-hide navbar functionality - now using transparency
@@ -156,9 +162,12 @@ const Navbar = () => {
     };
   }, [searchQuery]);
 
-  // Handle click outside to close suggestions
+  // Handle click outside to close user menu
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSuggestions(false);
         setSelectedSuggestion(-1);
@@ -198,6 +207,16 @@ const Navbar = () => {
     setShowSuggestions(false);
     setSelectedSuggestion(-1);
     setMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setShowUserMenu(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -274,7 +293,7 @@ const Navbar = () => {
           <div className="navbar-links">
             <Link 
               to="/" 
-              className={isActive('/') ? 'active' : ''}
+              className={location.pathname === '/' ? 'active' : ''}
               onClick={() => setMobileMenuOpen(false)}
             >
               <svg className="nav-icon" viewBox="0 0 24 24">
@@ -285,7 +304,7 @@ const Navbar = () => {
             
             <Link 
               to="/whattowatch" 
-              className={isActive('/whattowatch') ? 'active' : ''}
+              className={location.pathname.startsWith('/whattowatch') ? 'active' : ''}
               onClick={() => setMobileMenuOpen(false)}
             >
               <svg className="nav-icon" viewBox="0 0 24 24">
@@ -296,7 +315,7 @@ const Navbar = () => {
             
             <Link 
               to="/watchlist" 
-              className={isActive('/watchlist') ? 'active' : ''}
+              className={location.pathname.startsWith('/watchlist') ? 'active' : ''}
               onClick={() => setMobileMenuOpen(false)}
             >
               <svg className="nav-icon" viewBox="0 0 24 24">
@@ -401,10 +420,60 @@ const Navbar = () => {
           </div>
 
           <div className="navbar-actions">
-            <div className="auth-links">
-              <Link to="/login" className="auth-link login">Log In</Link>
-              <Link to="/signup" className="auth-link signup">Sign Up</Link>
-            </div>
+            {user ? (
+              <div className="user-menu" ref={userMenuRef}>
+                <button 
+                  className="user-avatar"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  aria-label="User menu"
+                >
+                  <div className="avatar-circle">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName} />
+                    ) : (
+                      <span>{user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}</span>
+                    )}
+                  </div>
+                  <svg className={`dropdown-arrow ${showUserMenu ? 'open' : ''}`} viewBox="0 0 24 24">
+                    <path d="M7 10l5 5 5-5z"/>
+                  </svg>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="user-dropdown">
+                    <div className="user-info">
+                      <div className="user-name">{user.displayName || 'User'}</div>
+                      <div className="user-email">{user.email}</div>
+                    </div>
+                    <div className="dropdown-divider"></div>
+                    <Link to="/profile" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                      <svg viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                      Profile
+                    </Link>
+                    <Link to="/watchlist" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                      <svg viewBox="0 0 24 24">
+                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                      </svg>
+                      My Watchlist
+                    </Link>
+                    <div className="dropdown-divider"></div>
+                    <button className="dropdown-item logout" onClick={handleLogout}>
+                      <svg viewBox="0 0 24 24">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                      </svg>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="auth-links">
+                <Link to="/login" className="auth-link login">Log In</Link>
+                <Link to="/signup" className="auth-link signup">Sign Up</Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
