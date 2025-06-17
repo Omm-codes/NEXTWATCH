@@ -312,10 +312,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🐛 **Bug Reports** - [GitHub Issues](https://github.com/your-username/nextwatch/issues)
 - 💡 **Feature Requests** - [GitHub Discussions](https://github.com/your-username/nextwatch/discussions)
 
-### Links
-- **Live Demo** - [NextWatch App](https://your-demo-url.com)
-- **Documentation** - [Wiki](https://github.com/your-username/nextwatch/wiki)
-- **API Reference** - [TMDB API Docs](https://developers.themoviedb.org/3)
+
 
 ---
 
