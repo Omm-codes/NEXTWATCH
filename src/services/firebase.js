@@ -66,7 +66,7 @@ export const signInUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
-    // Update existing user profile on sign in (don't create new one)
+    // Get existing user profile (don't create new one, just update last login)
     const { profile, error } = await updateExistingUserProfile(userCredential.user);
     
     return { user: userCredential.user, profile, error: null };
@@ -140,7 +140,7 @@ export const createUserProfile = async (user) => {
         displayName: user.displayName || '',
         firstName: user.displayName ? user.displayName.split(' ')[0] : '',
         lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
-        photoURL: user.photoURL || '',
+        // Remove photoURL from Firestore - we'll use local storage
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         watchlist: [],
@@ -190,6 +190,7 @@ export const createUserProfile = async (user) => {
       return { profile: updatedData, error: null };
     }
   } catch (error) {
+    console.error('Error in createUserProfile:', error);
     return { profile: null, error: error.message };
   }
 };
@@ -494,4 +495,122 @@ export const removeFromWatched = async (userId, movieId) => {
   }
 };
 
+// Local storage functions for profile photos
+export const saveProfilePhotoLocally = async (userId, file) => {
+  try {
+    if (!file || !file.type.startsWith('image/')) {
+      throw new Error('Please select a valid image file');
+    }
+    
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit for local storage
+      throw new Error('Image size must be less than 2MB');
+    }
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const dataURL = e.target.result;
+          localStorage.setItem(`profile_photo_${userId}`, dataURL);
+          resolve({ url: dataURL, error: null });
+        } catch (error) {
+          reject({ url: null, error: 'Failed to save photo locally' });
+        }
+      };
+      reader.onerror = () => {
+        reject({ url: null, error: 'Failed to read image file' });
+      };
+      reader.readAsDataURL(file);
+    });
+  } catch (error) {
+    return { url: null, error: error.message };
+  }
+};
+
+export const getProfilePhotoLocally = (userId) => {
+  try {
+    const photoURL = localStorage.getItem(`profile_photo_${userId}`);
+    return photoURL;
+  } catch (error) {
+    console.error('Error getting profile photo from local storage:', error);
+    return null;
+  }
+};
+
+export const deleteProfilePhotoLocally = (userId) => {
+  try {
+    localStorage.removeItem(`profile_photo_${userId}`);
+    return { error: null };
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
+// Simplified update user profile function
+export const updateUserProfileSimple = async (userId, profileData, photoFile = null) => {
+  try {
+    console.log('Starting simple profile update for user:', userId);
+    
+    const userRef = doc(db, 'users', userId);
+    let photoURL = null;
+
+    // Handle photo upload to local storage if provided
+    if (photoFile) {
+      console.log('Saving photo locally...');
+      const { url, error } = await saveProfilePhotoLocally(userId, photoFile);
+      if (error) {
+        console.error('Photo save failed:', error);
+        throw new Error(error);
+      }
+      photoURL = url;
+      console.log('Photo saved locally successfully');
+    }
+
+    // Get current document to preserve existing data
+    const currentDoc = await getDoc(userRef);
+    const currentData = currentDoc.exists() ? currentDoc.data() : {};
+
+    // Prepare update data
+    const updateData = {
+      ...profileData,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Handle nested updates properly
+    if (profileData.preferences) {
+      const currentPrefs = currentData.preferences || {};
+      updateData.preferences = {
+        ...currentPrefs,
+        ...profileData.preferences
+      };
+    }
+
+    console.log('Updating Firestore document...');
+    // Update the document (without photoURL in Firestore)
+    await updateDoc(userRef, updateData);
+
+    console.log('Updating Firebase Auth profile...');
+    // Update Firebase Auth profile
+    const user = auth.currentUser;
+    if (user) {
+      const authUpdateData = {
+        displayName: profileData.displayName || user.displayName
+      };
+      
+      await updateProfile(user, authUpdateData);
+    }
+
+    console.log('Profile update completed successfully');
+    
+    // Return updated profile data
+    const { profile: updatedProfile } = await getUserProfile(userId);
+    return { error: null, photoURL, profile: updatedProfile };
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    return { error: error.message || 'Failed to update profile' };
+  }
+};
+
 export default app;
+
+    

@@ -790,28 +790,41 @@
 }
 
 .avatar-circle {
-  width: 24px; /* Increased from 14px for better visibility */
-  height: 24px; /* Increased from 14px for better visibility */
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: linear-gradient(135deg, #e50914, #f40612);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more visible border */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .avatar-circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.avatar-circle:hover img {
+  transform: scale(1.1);
 }
 
 .avatar-circle span {
   color: white;
   font-weight: 600;
-  font-size: 0.65rem; /* Increased from 0.4rem for better readability */
+  font-size: 0.65rem;
   text-transform: uppercase;
+}
+
+/* Handle data URL images */
+.avatar-circle img[src^="data:"] {
+  object-fit: cover;
+  object-position: center;
 }
 
 .dropdown-arrow {
@@ -926,13 +939,13 @@
   }
 
   .avatar-circle {
-    width: 28px; /* Increased from 18px for mobile */
-    height: 28px;
+    width: 32px; /* Increased from 18px for mobile */
+    height: 32px;
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .avatar-circle span {
-    font-size: 0.75rem; /* Increased from 0.55rem for mobile */
+    font-size: 0.8rem; /* Increased from 0.55rem for mobile */
   }
 
   .dropdown-arrow {

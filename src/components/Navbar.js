@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { searchMovies } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { logoutUser } from '../services/firebase';
+import { logoutUser, getProfilePhotoLocally } from '../services/firebase';
 import logo from '../assets/logo.png';
 import './Navbar.css';;
 
@@ -16,7 +16,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user } = useAuth();
+  const [localPhotoURL, setLocalPhotoURL] = useState(null);
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef(null);
@@ -263,6 +264,16 @@ const Navbar = () => {
     };
   }, [mobileMenuOpen]);
 
+  // Load local profile photo when user or userProfile changes
+  useEffect(() => {
+    if (user) {
+      const localPhoto = getProfilePhotoLocally(user.uid);
+      setLocalPhotoURL(localPhoto);
+    } else {
+      setLocalPhotoURL(null);
+    }
+  }, [user, userProfile]);
+
   const isActive = (path) => {
     if (path === '/' && location.pathname !== '/') return false;
     return location.pathname.startsWith(path);
@@ -428,10 +439,17 @@ const Navbar = () => {
                   aria-label="User menu"
                 >
                   <div className="avatar-circle">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt={user.displayName} />
+                    {localPhotoURL ? (
+                      <img src={localPhotoURL} alt={userProfile?.displayName || user.displayName} />
+                    ) : user.photoURL ? (
+                      <img src={user.photoURL} alt={userProfile?.displayName || user.displayName} />
                     ) : (
-                      <span>{user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}</span>
+                      <span>
+                        {userProfile?.firstName?.charAt(0) || 
+                         userProfile?.displayName?.charAt(0) || 
+                         user.displayName?.charAt(0) || 
+                         user.email?.charAt(0) || 'U'}
+                      </span>
                     )}
                   </div>
                   <svg className={`dropdown-arrow ${showUserMenu ? 'open' : ''}`} viewBox="0 0 24 24">
@@ -442,7 +460,11 @@ const Navbar = () => {
                 {showUserMenu && (
                   <div className="user-dropdown">
                     <div className="user-info">
-                      <div className="user-name">{user.displayName || 'User'}</div>
+                      <div className="user-name">
+                        {userProfile?.firstName && userProfile?.lastName 
+                          ? `${userProfile.firstName} ${userProfile.lastName}`
+                          : userProfile?.displayName || user.displayName || 'User'}
+                      </div>
                       <div className="user-email">{user.email}</div>
                     </div>
                     <div className="dropdown-divider"></div>

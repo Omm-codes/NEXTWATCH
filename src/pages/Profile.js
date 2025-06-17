@@ -7,14 +7,17 @@ import {
   getUserWatchlist,
   getUserWatchedMovies,
   updateUserStats,
-  deleteUserAccount
+  deleteUserAccount,
+  updateUserProfileSimple,
+  getProfilePhotoLocally,
+  deleteProfilePhotoLocally
 } from '../services/firebase';
 import { updateProfile } from 'firebase/auth';
 import MovieCard from '../components/MovieCard';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, setUserProfile } = useAuth();
+  const { user, userProfile, setUserProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   
   const [profileData, setProfileData] = useState({
@@ -44,6 +47,10 @@ const Profile = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [localPhotoURL, setLocalPhotoURL] = useState(null);
 
   const genres = [
     'Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary',
@@ -91,6 +98,10 @@ const Profile = () => {
           });
           setUserProfile(profile);
         }
+
+        // Load local profile photo
+        const localPhoto = getProfilePhotoLocally(user.uid);
+        setLocalPhotoURL(localPhoto);
 
         // Load watchlist and watched movies
         setWatchlistLoading(true);
@@ -141,20 +152,64 @@ const Profile = () => {
     }));
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type and size
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('Image size must be less than 5MB');
+        return;
+      }
+
+      setPhotoFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      setError('');
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (localPhotoURL) {
+      setPhotoUploading(true);
+      try {
+        const { error } = deleteProfilePhotoLocally(user.uid);
+        if (error) {
+          setError('Failed to remove profile photo');
+        } else {
+          setLocalPhotoURL(null);
+        }
+      } catch (error) {
+        setError('Failed to remove profile photo');
+        console.error('Error removing profile photo:', error);
+      } finally {
+        setPhotoUploading(false);
+      }
+    }
+    
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError('');
 
     try {
+      console.log('Starting profile save...');
       const fullDisplayName = `${profileData.firstName} ${profileData.lastName}`.trim();
       
-      // Update Firebase Auth profile
-      await updateProfile(user, {
-        displayName: fullDisplayName || profileData.displayName
-      });
-
-      // Update Firestore profile
-      const { error } = await updateUserProfile(user.uid, {
+      // Prepare the profile data
+      const profileUpdateData = {
         displayName: fullDisplayName || profileData.displayName,
         firstName: profileData.firstName,
         lastName: profileData.lastName,
@@ -164,21 +219,55 @@ const Profile = () => {
           notifications: profileData.notifications,
           privacy: profileData.privacy
         }
-      });
+      };
+
+      console.log('Calling updateUserProfileSimple...');
+      
+      // Update profile with photo if a new photo was selected
+      const { error, photoURL, profile: updatedProfile } = await updateUserProfileSimple(
+        user.uid, 
+        profileUpdateData, 
+        photoFile
+      );
 
       if (error) {
-        setError('Failed to update profile');
+        console.error('Profile update failed:', error);
+        setError(`Failed to update profile: ${error}`);
       } else {
+        console.log('Profile updated successfully');
         setIsEditing(false);
-        // Reload profile data
-        const { profile } = await getUserProfile(user.uid);
-        if (profile) {
-          setUserProfile(profile);
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        
+        // Update local photo URL if new photo was uploaded
+        if (photoURL) {
+          setLocalPhotoURL(photoURL);
+        }
+        
+        // Update the auth context with the new profile data
+        if (updatedProfile) {
+          setUserProfile(updatedProfile);
+          
+          // Update local profile data state
+          setProfileData(prev => ({
+            ...prev,
+            displayName: updatedProfile.displayName || '',
+            firstName: updatedProfile.firstName || '',
+            lastName: updatedProfile.lastName || '',
+            favoriteGenres: updatedProfile.preferences?.favoriteGenres || [],
+            preferredLanguage: updatedProfile.preferences?.preferredLanguage || 'en',
+            notifications: updatedProfile.preferences?.notifications !== false,
+            privacy: updatedProfile.preferences?.privacy || 'public'
+          }));
+        } else {
+          // Fallback: refresh profile from Firestore
+          console.log('Refreshing profile from Firestore...');
+          await refreshUserProfile(user.uid);
         }
       }
     } catch (error) {
-      setError('Failed to update profile');
       console.error('Error updating profile:', error);
+      setError(`Failed to update profile: ${error.message || 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -258,16 +347,52 @@ const Profile = () => {
         <div className="profile-header">
           <div className="profile-avatar">
             <div className="avatar-circle">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName} />
+              {photoPreview ? (
+                <img src={photoPreview} alt="Preview" />
+              ) : localPhotoURL ? (
+                <img src={localPhotoURL} alt={userProfile?.displayName || user.displayName} />
+              ) : (user.photoURL) ? (
+                <img src={user.photoURL} alt={userProfile?.displayName || user.displayName} />
               ) : (
                 <span>
                   {profileData.firstName?.charAt(0) || 
                    profileData.displayName?.charAt(0) || 
+                   userProfile?.displayName?.charAt(0) ||
+                   user.displayName?.charAt(0) ||
                    user.email?.charAt(0) || 'U'}
                 </span>
               )}
             </div>
+            {isEditing && (
+              <div className="photo-upload-controls">
+                <input
+                  type="file"
+                  id="photoUpload"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="photo-upload-input"
+                />
+                <label htmlFor="photoUpload" className="photo-upload-btn">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                  </svg>
+                  {photoFile || localPhotoURL || user.photoURL ? 'Change' : 'Add'} Photo
+                </label>
+                {(photoFile || localPhotoURL || user.photoURL) && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="photo-remove-btn"
+                    disabled={photoUploading}
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                    Remove
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <div className="profile-info">
             <h1>

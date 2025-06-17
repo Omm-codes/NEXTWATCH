@@ -9,7 +9,7 @@ import './MovieCard.css';
 const MovieCard = ({ movie }) => {
   const [isInWatchlistState, setIsInWatchlistState] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
