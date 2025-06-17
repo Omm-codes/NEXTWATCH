@@ -157,14 +157,160 @@
         localStorage.setItem('nextwatch-pwa-installed', 'true');
       });
     </script>
-  </body>
-</html>
+    
+    <script>
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('SW registered: ', registration);
+              
+              // Listen for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New content available, show update prompt
+                    if (window.confirm('New version available! Click OK to update.')) {
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+
+      // PWA Install Prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Check if user has dismissed install prompt recently
+        const lastDismissed = localStorage.getItem('nextwatch-install-dismissed');
+        if (lastDismissed && (Date.now() - lastDismissed) < 7 * 24 * 60 * 60 * 1000) {
+          return;
+        }
+        
+        // Show install prompt after 30 seconds
+        setTimeout(() => {
+          showInstallPrompt();
+        }, 30000);
       });
-      
-      // Handle successful installation
+
+      function showInstallPrompt() {
+        const installPrompt = document.createElement('div');
+        installPrompt.id = 'install-prompt';
+        installPrompt.innerHTML = `
+          <div style="
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #e50914, #f40612);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideUp 0.3s ease-out;
+            max-width: 400px;
+            margin: 0 auto;
+          ">
+            <div>
+              <strong>📱 Install NextWatch</strong>
+              <br>
+              <small>Get the full app experience with offline access!</small>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button onclick="installApp()" style="
+                background: white;
+                color: #e50914;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-weight: bold;
+                cursor: pointer;
+                font-size: 14px;
+              ">Install</button>
+              <button onclick="dismissInstall()" style="
+                background: transparent;
+                color: white;
+                border: 1px solid white;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+              ">Later</button>
+            </div>
+          </div>
+          <style>
+            @keyframes slideUp {
+              from { transform: translateY(100%); opacity: 0; }
+              to { transform: translateY(0); opacity: 1; }
+            }
+          </style>
+        `;
+        document.body.appendChild(installPrompt);
+
+        window.installApp = () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+              if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+              }
+              deferredPrompt = null;
+              hideInstallPrompt();
+            });
+          }
+        };
+
+        window.dismissInstall = () => {
+          localStorage.setItem('nextwatch-install-dismissed', Date.now());
+          hideInstallPrompt();
+        };
+
+        function hideInstallPrompt() {
+          const prompt = document.getElementById('install-prompt');
+          if (prompt) {
+            prompt.style.animation = 'slideDown 0.3s ease-out';
+            setTimeout(() => {
+              document.body.removeChild(prompt);
+            }, 300);
+          }
+        }
+      }
+
+      // App installed event
       window.addEventListener('appinstalled', (evt) => {
         console.log('NextWatch PWA was installed successfully');
         localStorage.setItem('nextwatch-pwa-installed', 'true');
+        
+        // Hide install prompt if showing
+        const installPrompt = document.getElementById('install-prompt');
+        if (installPrompt) {
+          document.body.removeChild(installPrompt);
+        }
+      });
+
+      // Handle offline status
+      window.addEventListener('online', () => {
+        console.log('App is online');
+        // You can dispatch a custom event here for your React app to handle
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('App is offline');
+        // You can dispatch a custom event here for your React app to handle
       });
     </script>
   </body>
