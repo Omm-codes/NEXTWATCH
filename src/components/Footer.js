@@ -56,32 +56,51 @@ const Footer = () => {
         </div>
         
         <div className="footer-section">
-          <h4>Support</h4>
+          <h4>Company</h4>
           <ul>
             <li><Link to="/about">About NextWatch</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            <li><Link to="/privacy">Privacy</Link></li>
-            <li><Link to="/terms">Terms</Link></li>
+            <li><Link to="/contact">Contact Us</Link></li>
+            <li><a href="mailto:omsanjay975@gmail.com">Email Support</a></li>
+          </ul>
+        </div>
+        
+        <div className="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><Link to="/privacy">Privacy Policy</Link></li>
+            <li><Link to="/terms">Terms of Service</Link></li>
+            <li><a href="https://www.themoviedb.org/terms-of-use" target="_blank" rel="noopener noreferrer">TMDB Terms</a></li>
           </ul>
         </div>
       </div>
       
+      <div className="footer-divider"></div>
+      
       <div className="footer-bottom">
-        <div className="copyright">
-          <p>&copy; {currentYear} NextWatch. Made with ❤️ for movie lovers</p>
-        </div>
-        <div className="tmdb-attribution">
+        <div className="footer-bottom-left">
+          <p>&copy; {currentYear} NextWatch. Made with ❤️ for movie lovers everywhere.</p>
           <p>
-            Powered by{' '}
+            Movie data provided by{' '}
             <a 
               href="https://www.themoviedb.org/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="tmdb-link"
             >
-              TMDB
+              The Movie Database (TMDB)
             </a>
           </p>
+        </div>
+        <div className="footer-bottom-right">
+          <div className="app-links">
+            <span>Connect with us:</span>
+            <Link to="/contact" className="app-link">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              Get in Touch
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

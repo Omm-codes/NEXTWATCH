@@ -26,6 +26,8 @@ import Login from './pages/Login';
 import SignUp from './pages/Signup';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 function App() {
   const [theme, setTheme] = useState('dark-mode');
@@ -61,6 +63,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

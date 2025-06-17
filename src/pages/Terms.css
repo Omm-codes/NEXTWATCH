@@ -1,0 +1,338 @@
+.terms-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #111111 0%, #1a1a1a 25%, rgba(45, 27, 46, 0.3) 50%, #1a1a1a 75%, #111111 100%);
+  color: #ffffff;
+  padding-top: 4rem;
+}
+
+.terms-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Hero Section */
+.terms-hero {
+  text-align: center;
+  padding: 4rem 0 3rem;
+  position: relative;
+}
+
+.terms-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.terms-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.terms-subtitle {
+  font-size: 1.1rem;
+  color: #b3b3b3;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.last-updated {
+  display: inline-block;
+  background: rgba(229, 9, 20, 0.1);
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #e50914;
+  font-weight: 500;
+}
+
+/* Terms Content */
+.terms-content {
+  padding: 2rem 0 4rem;
+}
+
+.terms-section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.terms-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.02), transparent);
+  transition: left 0.5s ease;
+}
+
+.terms-section:hover::before {
+  left: 100%;
+}
+
+.terms-section h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #e50914;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.terms-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 1.5rem 0 0.75rem 0;
+}
+
+.terms-section p {
+  color: #e0e0e0;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.terms-section ul {
+  margin: 1rem 0 1rem 1.5rem;
+  color: #e0e0e0;
+}
+
+.terms-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.privacy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e50914;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  background: rgba(229, 9, 20, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.privacy-link:hover {
+  background: rgba(229, 9, 20, 0.2);
+  transform: translateX(5px);
+}
+
+.contact-info {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.contact-info p {
+  margin-bottom: 0.5rem;
+}
+
+.contact-info a {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-info a:hover {
+  text-decoration: underline;
+}
+
+/* Call to Action */
+.terms-cta {
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.08) 0%, rgba(229, 9, 20, 0.03) 100%);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  margin: 2rem 0 4rem;
+  text-align: center;
+  border: 1px solid rgba(229, 9, 20, 0.1);
+}
+
+.cta-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.cta-content p {
+  font-size: 1rem;
+  color: #e0e0e0;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #e50914, #f40612);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.3s ease;
+}
+
+.cta-button:hover::before {
+  left: 100%;
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #f40612, #ff1744);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+}
+
+.button-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .terms-page {
+    padding-top: 3rem;
+  }
+
+  .terms-container {
+    padding: 0 1rem;
+  }
+
+  .terms-hero {
+    padding: 3rem 0 2rem;
+  }
+
+  .terms-title {
+    font-size: 2.2rem;
+  }
+
+  .terms-subtitle {
+    font-size: 1rem;
+  }
+
+  .terms-section {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .terms-section h2 {
+    font-size: 1.4rem;
+  }
+
+  .terms-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .terms-cta {
+    padding: 2rem 1.5rem;
+    margin: 2rem 0 3rem;
+  }
+
+  .cta-content h2 {
+    font-size: 1.6rem;
+  }
+
+  .cta-button {
+    width: 100%;
+    max-width: 250px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-title {
+    font-size: 1.8rem;
+  }
+
+  .terms-section {
+    padding: 1.2rem;
+  }
+
+  .terms-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .terms-section h3 {
+    font-size: 1rem;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 0.9rem;
+  }
+
+  .contact-info {
+    padding: 1rem;
+  }
+
+  .cta-content h2 {
+    font-size: 1.4rem;
+  }
+
+  .cta-content p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .terms-section::before,
+  .cta-button::before {
+    display: none !important;
+  }
+
+  .privacy-link:hover,
+  .cta-button:hover {
+    transform: none !important;
+  }
+}
