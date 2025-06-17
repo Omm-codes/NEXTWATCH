@@ -8,7 +8,8 @@ import {
   updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  deleteUser
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -21,7 +22,8 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  deleteDoc
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -51,27 +53,54 @@ export const createUserAccount = async (email, password, displayName) => {
       displayName: displayName
     });
     
-    return { user: userCredential.user, error: null };
+    // Create user profile in Firestore
+    const { profile, error } = await createUserProfile(userCredential.user);
+    
+    return { user: userCredential.user, profile, error: null };
   } catch (error) {
-    return { user: null, error: error.message };
+    return { user: null, profile: null, error: error.message };
   }
 };
 
 export const signInUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { user: userCredential.user, error: null };
+    
+    // Update existing user profile on sign in (don't create new one)
+    const { profile, error } = await updateExistingUserProfile(userCredential.user);
+    
+    return { user: userCredential.user, profile, error: null };
   } catch (error) {
-    return { user: null, error: error.message };
+    return { user: null, profile: null, error: error.message };
   }
 };
 
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    return { user: result.user, error: null };
+    const user = result.user;
+    
+    // Check if user exists, if not create profile, if yes update profile
+    const { profile, error } = await createUserProfile(user);
+    
+    return { user, profile, error: null };
   } catch (error) {
-    return { user: null, error: error.message };
+    return { user: null, profile: null, error: error.message };
+  }
+};
+
+// New function for signup with Google (creates account or signs in existing)
+export const signUpWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    
+    // For signup, always try to create or update profile
+    const { profile, error } = await createUserProfile(user);
+    
+    return { user, profile, error: null };
+  } catch (error) {
+    return { user: null, profile: null, error: error.message };
   }
 };
 
@@ -98,36 +127,70 @@ export const onAuthStateChange = (callback) => {
   return onAuthStateChanged(auth, callback);
 };
 
-// Firestore functions for user profiles and watchlist
+// Enhanced Firestore functions for user profiles and watchlist
 export const createUserProfile = async (user) => {
   try {
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
     
     if (!userSnap.exists()) {
-      await setDoc(userRef, {
+      const userData = {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || '',
+        firstName: user.displayName ? user.displayName.split(' ')[0] : '',
+        lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
         photoURL: user.photoURL || '',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
         watchlist: [],
+        watchedMovies: [],
+        stats: {
+          totalWatchedMovies: 0,
+          totalWatchedTVShows: 0,
+          totalWatchlistItems: 0,
+          joinDate: new Date().toISOString()
+        },
         preferences: {
           favoriteGenres: [],
-          preferredLanguage: 'en'
+          preferredLanguage: 'en',
+          notifications: true,
+          privacy: 'public'
         },
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      });
+        isActive: true
+      };
+      
+      await setDoc(userRef, userData);
+      return { profile: userData, error: null };
     } else {
-      // Update last login
-      await updateDoc(userRef, {
-        lastLogin: new Date().toISOString()
-      });
+      const existingData = userSnap.data();
+      const updatedData = {
+        ...existingData,
+        lastLogin: new Date().toISOString(),
+        firstName: existingData.firstName || (user.displayName ? user.displayName.split(' ')[0] : ''),
+        lastName: existingData.lastName || (user.displayName ? user.displayName.split(' ').slice(1).join(' ') : ''),
+        stats: {
+          totalWatchedMovies: 0,
+          totalWatchedTVShows: 0,
+          totalWatchlistItems: existingData.watchlist?.length || 0,
+          joinDate: existingData.createdAt || new Date().toISOString(),
+          ...existingData.stats
+        },
+        preferences: {
+          favoriteGenres: [],
+          preferredLanguage: 'en',
+          notifications: true,
+          privacy: 'public',
+          ...existingData.preferences
+        },
+        isActive: true
+      };
+      
+      await updateDoc(userRef, updatedData);
+      return { profile: updatedData, error: null };
     }
-    
-    return { error: null };
   } catch (error) {
-    return { error: error.message };
+    return { profile: null, error: error.message };
   }
 };
 
@@ -149,31 +212,86 @@ export const getUserProfile = async (userId) => {
 export const updateUserProfile = async (userId, profileData) => {
   try {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const updateData = {
       ...profileData,
       updatedAt: new Date().toISOString()
-    });
+    };
     
+    // Handle nested updates properly
+    if (profileData.preferences) {
+      const currentDoc = await getDoc(userRef);
+      if (currentDoc.exists()) {
+        const currentPrefs = currentDoc.data().preferences || {};
+        updateData.preferences = {
+          ...currentPrefs,
+          ...profileData.preferences
+        };
+      }
+    }
+    
+    await updateDoc(userRef, updateData);
     return { error: null };
   } catch (error) {
     return { error: error.message };
   }
 };
 
+// Add function to update user stats
+export const updateUserStats = async (userId, statsUpdate) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const currentDoc = await getDoc(userRef);
+    
+    if (currentDoc.exists()) {
+      const currentStats = currentDoc.data().stats || {};
+      const updatedStats = {
+        ...currentStats,
+        ...statsUpdate,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      await updateDoc(userRef, {
+        stats: updatedStats,
+        updatedAt: new Date().toISOString()
+      });
+      
+      return { error: null };
+    }
+    
+    return { error: 'User profile not found' };
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
+// Enhanced watchlist functions
 export const addToWatchlist = async (userId, movieData) => {
   try {
     const userRef = doc(db, 'users', userId);
+    const movieItem = {
+      id: movieData.id,
+      title: movieData.title || movieData.name,
+      poster_path: movieData.poster_path,
+      release_date: movieData.release_date || movieData.first_air_date,
+      vote_average: movieData.vote_average,
+      media_type: movieData.media_type || 'movie',
+      genre_ids: movieData.genre_ids || [],
+      addedAt: new Date().toISOString()
+    };
+    
     await updateDoc(userRef, {
-      watchlist: arrayUnion({
-        id: movieData.id,
-        title: movieData.title,
-        poster_path: movieData.poster_path,
-        release_date: movieData.release_date,
-        vote_average: movieData.vote_average,
-        media_type: movieData.media_type || 'movie',
-        addedAt: new Date().toISOString()
-      })
+      watchlist: arrayUnion(movieItem),
+      updatedAt: new Date().toISOString()
     });
+    
+    // Update stats - get current watchlist count
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      const currentWatchlist = userDoc.data().watchlist || [];
+      await updateUserStats(userId, {
+        totalWatchlistItems: currentWatchlist.length
+      });
+    }
     
     return { error: null };
   } catch (error) {
@@ -192,7 +310,13 @@ export const removeFromWatchlist = async (userId, movieId) => {
       
       if (movieToRemove) {
         await updateDoc(userRef, {
-          watchlist: arrayRemove(movieToRemove)
+          watchlist: arrayRemove(movieToRemove),
+          updatedAt: new Date().toISOString()
+        });
+        
+        // Update stats
+        await updateUserStats(userId, {
+          totalWatchlistItems: watchlist.length - 1
         });
       }
     }
@@ -232,6 +356,141 @@ export const isInWatchlist = async (userId, movieId) => {
     return { isInList: false, error: null };
   } catch (error) {
     return { isInList: false, error: error.message };
+  }
+};
+
+// Add function to mark movie as watched
+export const markAsWatched = async (userId, movieData) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const watchedItem = {
+      ...movieData,
+      watchedAt: new Date().toISOString(),
+      rating: null // User can add rating later
+    };
+    
+    await updateDoc(userRef, {
+      watchedMovies: arrayUnion(watchedItem),
+      updatedAt: new Date().toISOString()
+    });
+    
+    // Update stats
+    const mediaType = movieData.media_type || 'movie';
+    const userDoc = await getDoc(userRef);
+    const currentStats = userDoc.exists() ? userDoc.data().stats || {} : {};
+    
+    const statsUpdate = {};
+    if (mediaType === 'movie') {
+      statsUpdate.totalWatchedMovies = (currentStats.totalWatchedMovies || 0) + 1;
+    } else {
+      statsUpdate.totalWatchedTVShows = (currentStats.totalWatchedTVShows || 0) + 1;
+    }
+    
+    await updateUserStats(userId, statsUpdate);
+    
+    return { error: null };
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
+// Complete the getUserWatchedMovies function
+export const getUserWatchedMovies = async (userId) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      const watchedMovies = userSnap.data().watchedMovies || [];
+      return { watchedMovies, error: null };
+    } else {
+      return { watchedMovies: [], error: null };
+    }
+  } catch (error) {
+    return { watchedMovies: [], error: error.message };
+  }
+};
+
+// New function to update existing user profile without creating new one
+export const updateExistingUserProfile = async (user) => {
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      // User exists, update last login
+      const existingData = userSnap.data();
+      const updatedData = {
+        ...existingData,
+        lastLogin: new Date().toISOString(),
+        isActive: true
+      };
+      
+      await updateDoc(userRef, updatedData);
+      return { profile: updatedData, error: null };
+    } else {
+      // User doesn't exist in Firestore, create profile
+      return await createUserProfile(user);
+    }
+  } catch (error) {
+    return { profile: null, error: error.message };
+  }
+};
+
+// Add function to delete user account completely
+export const deleteUserAccount = async (userId) => {
+  try {
+    // Delete user document from Firestore first
+    const userRef = doc(db, 'users', userId);
+    await deleteDoc(userRef);
+    
+    // Delete the Firebase Auth user
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.uid === userId) {
+      await deleteUser(currentUser);
+    }
+    
+    return { error: null };
+  } catch (error) {
+    console.error('Error deleting user account:', error);
+    return { error: error.message };
+  }
+};
+
+// Add function to remove watched movie from Firebase
+export const removeFromWatched = async (userId, movieId) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const watchedMovies = userDoc.data().watchedMovies || [];
+      const movieToRemove = watchedMovies.find(movie => movie.id === movieId);
+      
+      if (movieToRemove) {
+        await updateDoc(userRef, {
+          watchedMovies: arrayRemove(movieToRemove),
+          updatedAt: new Date().toISOString()
+        });
+        
+        // Update stats
+        const mediaType = movieToRemove.media_type || 'movie';
+        const currentStats = userDoc.data().stats || {};
+        
+        const statsUpdate = {};
+        if (mediaType === 'movie') {
+          statsUpdate.totalWatchedMovies = Math.max(0, (currentStats.totalWatchedMovies || 0) - 1);
+        } else {
+          statsUpdate.totalWatchedTVShows = Math.max(0, (currentStats.totalWatchedTVShows || 0) - 1);
+        }
+        
+        await updateUserStats(userId, statsUpdate);
+      }
+    }
+    
+    return { error: null };
+  } catch (error) {
+    return { error: error.message };
   }
 };
 

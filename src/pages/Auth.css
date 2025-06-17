@@ -328,6 +328,26 @@
   color: #c8e6c9;
 }
 
+.info-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  background: rgba(54, 162, 235, 0.1);
+  border: 1px solid rgba(54, 162, 235, 0.3);
+  color: #64b5f6;
+}
+
+.info-icon {
+  width: 20px;
+  height: 20px;
+  fill: #2196f3;
+  flex-shrink: 0;
+}
+
 .error-icon {
   width: 20px;
   height: 20px;

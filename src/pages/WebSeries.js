@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
 import { 
-  getPopularWebSeries, 
-  getTopRatedWebSeries,
+  getPopularTVShows, 
+  getTopRatedTVShows, 
+  getOnTheAirTVShows,
   getTVShowsByGenre,
   getTVGenres
 } from '../services/api';
-import './Movies.css';
+import './Movies.css'; // Reuse Movies.css styles
 
 const WebSeries = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,26 +21,14 @@ const WebSeries = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalPages, setTotalPages] = useState(0);
-  const [selectedGenreName, setSelectedGenreName] = useState('');
 
   useEffect(() => {
     const fetchGenres = async () => {
       try {
         const genresData = await getTVGenres();
-        // Filter to web series relevant genres
-        const webSeriesGenres = genresData.genres.filter(genre => 
-          ['Drama', 'Crime', 'Mystery', 'Thriller', 'Sci-Fi & Fantasy'].includes(genre.name)
-        );
-        setGenres(webSeriesGenres);
-        
-        if (genreId) {
-          const selectedGenre = webSeriesGenres.find(g => g.id.toString() === genreId);
-          if (selectedGenre) {
-            setSelectedGenreName(selectedGenre.name);
-          }
-        }
+        setGenres(genresData.genres);
       } catch (err) {
-        console.error('Error fetching genres:', err);
+        console.error('Error fetching TV genres:', err);
       }
     };
     
@@ -57,23 +46,27 @@ const WebSeries = () => {
         } else {
           switch (category) {
             case 'top_rated':
-              data = await getTopRatedWebSeries(currentPage);
+              data = await getTopRatedTVShows(currentPage);
+              break;
+            case 'on_the_air':
+              data = await getOnTheAirTVShows(currentPage);
               break;
             case 'popular':
             default:
-              data = await getPopularWebSeries(currentPage);
+              data = await getPopularTVShows(currentPage);
               break;
           }
         }
         
-        const transformedSeries = data.results.map(series => ({
-          ...series,
-          title: series.name,
-          release_date: series.first_air_date,
+        // Transform TV show data to match movie card format
+        const transformedShows = data.results.map(show => ({
+          ...show,
+          title: show.name,
+          release_date: show.first_air_date,
           media_type: 'webseries'
         }));
         
-        setWebSeries(transformedSeries);
+        setWebSeries(transformedShows);
         setTotalPages(Math.min(data.total_pages, 500));
         setError(null);
       } catch (err) {
@@ -102,6 +95,7 @@ const WebSeries = () => {
     newParams.delete('genre');
     newParams.set('page', '1');
     setSearchParams(newParams);
+    setCurrentPage(1);
   };
 
   const handleGenreChange = (e) => {
@@ -120,14 +114,16 @@ const WebSeries = () => {
     
     newParams.set('page', '1');
     setSearchParams(newParams);
+    setCurrentPage(1);
   };
 
   const getCategoryTitle = () => {
-    if (genreId) return `${selectedGenreName} Web Series`;
+    if (genreId) return `${genres.find(g => g.id.toString() === genreId)?.name || ''} Web Series`;
     
     switch (category) {
       case 'popular': return 'Popular Web Series';
       case 'top_rated': return 'Top Rated Web Series';
+      case 'on_the_air': return 'Currently Airing Web Series';
       default: return 'Web Series';
     }
   };
@@ -165,6 +161,12 @@ const WebSeries = () => {
                 Popular
               </button>
               <button 
+                className={`category-tab ${!genreId && category === 'on_the_air' ? 'active' : ''}`}
+                onClick={() => handleCategoryChange('on_the_air')}
+              >
+                Currently Airing
+              </button>
+              <button 
                 className={`category-tab ${!genreId && category === 'top_rated' ? 'active' : ''}`}
                 onClick={() => handleCategoryChange('top_rated')}
               >
@@ -191,7 +193,7 @@ const WebSeries = () => {
             
             <Link to="/whattowatch" className="help-button" title="Get personalized recommendations">
               <svg className="help-icon" viewBox="0 0 24 24">
-                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
               </svg>
               Need Help Choosing?
             </Link>
@@ -217,14 +219,13 @@ const WebSeries = () => {
       ) : (
         <>
           <div className="movies-grid">
-            {webSeries.map(series => (
-              <MovieCard key={series.id} movie={series} />
+            {webSeries.map(show => (
+              <MovieCard key={show.id} movie={show} />
             ))}
           </div>
           
           {totalPages > 1 && (
             <div className="pagination">
-              {/* Same pagination structure as TVShows.js */}
               <button 
                 onClick={() => handlePageChange(1)} 
                 disabled={currentPage === 1}

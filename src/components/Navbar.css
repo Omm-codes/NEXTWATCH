@@ -776,11 +776,11 @@
 .user-avatar {
   display: flex;
   align-items: center;
-  gap: 0.15rem; /* Reduced from 0.2rem */
+  gap: 0.15rem; /* Increased slightly for better spacing */
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0.05rem; /* Reduced from 0.1rem */
+  padding: 0.05rem; /* Increased slightly */
   border-radius: 50px;
   transition: all 0.3s ease;
 }
@@ -790,15 +790,15 @@
 }
 
 .avatar-circle {
-  width: 18px; /* Reduced from 20px */
-  height: 18px; /* Reduced from 20px */
+  width: 24px; /* Increased from 14px for better visibility */
+  height: 24px; /* Increased from 14px for better visibility */
   border-radius: 50%;
   background: linear-gradient(135deg, #e50914, #f40612);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1); /* Reduced border opacity */
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more visible border */
 }
 
 .avatar-circle img {
@@ -810,13 +810,13 @@
 .avatar-circle span {
   color: white;
   font-weight: 600;
-  font-size: 0.5rem; /* Reduced from 0.6rem */
+  font-size: 0.65rem; /* Increased from 0.4rem for better readability */
   text-transform: uppercase;
 }
 
 .dropdown-arrow {
-  width: 8px; /* Reduced from 10px */
-  height: 8px; /* Reduced from 10px */
+  width: 8px; /* Increased from 6px */
+  height: 8px; /* Increased from 6px */
   fill: rgba(255, 255, 255, 0.7);
   transition: transform 0.3s ease;
 }
@@ -926,17 +926,17 @@
   }
 
   .avatar-circle {
-    width: 22px; /* Reduced from 26px for mobile */
-    height: 22px;
+    width: 28px; /* Increased from 18px for mobile */
+    height: 28px;
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .avatar-circle span {
-    font-size: 0.65rem; /* Reduced from 0.75rem for mobile */
+    font-size: 0.75rem; /* Increased from 0.55rem for mobile */
   }
 
   .dropdown-arrow {
-    width: 10px; /* Reduced from 12px for mobile */
+    width: 10px; /* Increased from 8px for mobile */
     height: 10px;
   }
 }

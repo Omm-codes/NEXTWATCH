@@ -93,6 +93,35 @@ export const getMovieVideos = async (movieId) => {
   }
 };
 
+// Add missing TV Show API functions
+export const getPopularTVShows = (page = 1) => {
+  return getApiData('/tv/popular', { page });
+};
+
+export const getPopularWebSeries = (page = 1) => {
+  // Web series can be filtered TV shows or use popular TV shows
+  return getApiData('/tv/popular', { page });
+};
+
+export const getTVShowDetails = (tvId) => {
+  return getApiData(`/tv/${tvId}`, {
+    append_to_response: 'credits,videos,images,recommendations'
+  });
+};
+
+export const getTVShowVideos = async (tvId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tv/${tvId}/videos?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching TV show videos:', error);
+    throw error;
+  }
+};
+
 // Add trending movies function
 export const getTrendingMovies = async () => {
   try {
@@ -122,10 +151,6 @@ export const getTrendingTVShows = async () => {
 };
 
 // TV Shows endpoints
-export const getPopularTVShows = (page = 1) => {
-  return getApiData('/tv/popular', { page });
-};
-
 export const getTopRatedTVShows = (page = 1) => {
   return getApiData('/tv/top_rated', { page });
 };
@@ -134,49 +159,11 @@ export const getOnTheAirTVShows = (page = 1) => {
   return getApiData('/tv/on_the_air', { page });
 };
 
-export const getTVShowDetails = async (id) => {
-  try {
-    const response = await fetch(
-      `${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=credits,recommendations`
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching TV show details:', error);
-    throw error;
-  }
-};
-
-export const getTVShowVideos = async (id) => {
-  try {
-    const response = await fetch(
-      `${BASE_URL}/tv/${id}/videos?api_key=${API_KEY}`
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching TV show videos:', error);
-    throw error;
-  }
-};
-
 // Web Series (using TV shows with specific genres)
 export const getWebSeries = (page = 1) => {
   // Get TV shows with Drama, Crime, Mystery genres (typical web series genres)
   return getApiData('/discover/tv', {
     with_genres: '18,80,9648', // Drama, Crime, Mystery
-    page
-  });
-};
-
-export const getPopularWebSeries = (page = 1) => {
-  return getApiData('/discover/tv', {
-    with_genres: '18,80,9648',
-    sort_by: 'popularity.desc',
     page
   });
 };

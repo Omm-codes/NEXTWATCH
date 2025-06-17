@@ -105,3 +105,61 @@ p {
   line-height: 1.6;
   color: var(--text-muted);
 }
+::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ===== Responsive Typography ===== */
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+p {
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+
+/* ===== Default Theme Colors ===== */
+:root {
+  --primary-color: #e50914;
+  --bg-dark: #121212;
+  --bg-light: #1f1f1f;
+  --text-light: #ffffff;
+  --text-muted: #cccccc;
+  --accent: #1db954;
+}
+
+/* ===== Scrollbar Styling (Optional) ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ===== Responsive Typography ===== */
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+p {
+  line-height: 1.6;
+  color: var(--text-muted);
+}

@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserProfile, updateUserProfile, getUserWatchlist } from '../services/firebase';
+import { 
+  getUserProfile, 
+  updateUserProfile, 
+  getUserWatchlist,
+  getUserWatchedMovies,
+  updateUserStats,
+  deleteUserAccount
+} from '../services/firebase';
 import { updateProfile } from 'firebase/auth';
 import MovieCard from '../components/MovieCard';
 import './Profile.css';
@@ -12,21 +19,43 @@ const Profile = () => {
   
   const [profileData, setProfileData] = useState({
     displayName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     favoriteGenres: [],
-    preferredLanguage: 'en'
+    preferredLanguage: 'en',
+    notifications: true,
+    privacy: 'public'
   });
   const [watchlist, setWatchlist] = useState([]);
+  const [watchedMovies, setWatchedMovies] = useState([]);
+  const [userStats, setUserStats] = useState({
+    totalWatchedMovies: 0,
+    totalWatchedTVShows: 0,
+    totalWatchlistItems: 0,
+    joinDate: new Date().toISOString()
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [watchlistLoading, setWatchlistLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const genres = [
     'Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary',
     'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Music', 'Mystery',
     'Romance', 'Science Fiction', 'TV Movie', 'Thriller', 'War', 'Western'
+  ];
+
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'watchlist', label: 'Watchlist', icon: '📚' },
+    { id: 'watched', label: 'Watched', icon: '✅' },
+    { id: 'stats', label: 'Statistics', icon: '📊' }
   ];
 
   useEffect(() => {
@@ -46,21 +75,42 @@ const Profile = () => {
         } else if (profile) {
           setProfileData({
             displayName: profile.displayName || user.displayName || '',
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
             email: profile.email || user.email || '',
             favoriteGenres: profile.preferences?.favoriteGenres || [],
-            preferredLanguage: profile.preferences?.preferredLanguage || 'en'
+            preferredLanguage: profile.preferences?.preferredLanguage || 'en',
+            notifications: profile.preferences?.notifications !== false,
+            privacy: profile.preferences?.privacy || 'public'
+          });
+          setUserStats(profile.stats || {
+            totalWatchedMovies: 0,
+            totalWatchedTVShows: 0,
+            totalWatchlistItems: 0,
+            joinDate: profile.createdAt || new Date().toISOString()
           });
           setUserProfile(profile);
         }
 
-        // Load watchlist
+        // Load watchlist and watched movies
         setWatchlistLoading(true);
-        const { watchlist: userWatchlist, error: watchlistError } = await getUserWatchlist(user.uid);
-        if (watchlistError) {
-          console.error('Failed to load watchlist:', watchlistError);
+        const [watchlistResult, watchedResult] = await Promise.all([
+          getUserWatchlist(user.uid),
+          getUserWatchedMovies(user.uid)
+        ]);
+        
+        if (watchlistResult.error) {
+          console.error('Failed to load watchlist:', watchlistResult.error);
         } else {
-          setWatchlist(userWatchlist);
+          setWatchlist(watchlistResult.watchlist);
         }
+        
+        if (watchedResult.error) {
+          console.error('Failed to load watched movies:', watchedResult.error);
+        } else {
+          setWatchedMovies(watchedResult.watchedMovies);
+        }
+        
         setWatchlistLoading(false);
         
       } catch (error) {
@@ -75,10 +125,10 @@ const Profile = () => {
   }, [user, navigate, setUserProfile]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setProfileData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -96,17 +146,23 @@ const Profile = () => {
     setError('');
 
     try {
+      const fullDisplayName = `${profileData.firstName} ${profileData.lastName}`.trim();
+      
       // Update Firebase Auth profile
       await updateProfile(user, {
-        displayName: profileData.displayName
+        displayName: fullDisplayName || profileData.displayName
       });
 
       // Update Firestore profile
       const { error } = await updateUserProfile(user.uid, {
-        displayName: profileData.displayName,
+        displayName: fullDisplayName || profileData.displayName,
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
         preferences: {
           favoriteGenres: profileData.favoriteGenres,
-          preferredLanguage: profileData.preferredLanguage
+          preferredLanguage: profileData.preferredLanguage,
+          notifications: profileData.notifications,
+          privacy: profileData.privacy
         }
       });
 
@@ -129,14 +185,57 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
+    // Reset to original data
     setProfileData({
       displayName: user.displayName || '',
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
       email: user.email || '',
       favoriteGenres: profileData.favoriteGenres,
-      preferredLanguage: profileData.preferredLanguage
+      preferredLanguage: profileData.preferredLanguage,
+      notifications: profileData.notifications,
+      privacy: profileData.privacy
     });
     setIsEditing(false);
     setError('');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      setError('Please type "DELETE" to confirm');
+      return;
+    }
+
+    setIsDeleting(true);
+    
+    try {
+      const { error } = await deleteUserAccount(user.uid);
+      
+      if (error) {
+        setError('Failed to delete account. Please try again or contact support.');
+      } else {
+        // Account deleted successfully - user will be automatically signed out
+        navigate('/', { 
+          replace: true,
+          state: { message: 'Your account has been successfully deleted.' }
+        });
+      }
+    } catch (error) {
+      setError('An unexpected error occurred while deleting your account.');
+      console.error('Error deleting account:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setDeleteConfirmText('');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -162,21 +261,33 @@ const Profile = () => {
               {user.photoURL ? (
                 <img src={user.photoURL} alt={user.displayName} />
               ) : (
-                <span>{user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}</span>
+                <span>
+                  {profileData.firstName?.charAt(0) || 
+                   profileData.displayName?.charAt(0) || 
+                   user.email?.charAt(0) || 'U'}
+                </span>
               )}
             </div>
           </div>
           <div className="profile-info">
-            <h1>{user.displayName || 'User'}</h1>
+            <h1>
+              {profileData.firstName && profileData.lastName 
+                ? `${profileData.firstName} ${profileData.lastName}`
+                : profileData.displayName || user.displayName || 'User'}
+            </h1>
             <p className="profile-email">{user.email}</p>
             <div className="profile-stats">
               <div className="stat-item">
-                <span className="stat-number">{watchlist.length}</span>
-                <span className="stat-label">Watchlist Items</span>
+                <span className="stat-number">{userStats.totalWatchlistItems || watchlist.length}</span>
+                <span className="stat-label">Watchlist</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">{userStats.totalWatchedMovies + userStats.totalWatchedTVShows}</span>
+                <span className="stat-label">Watched</span>
               </div>
               <div className="stat-item">
                 <span className="stat-number">{profileData.favoriteGenres.length}</span>
-                <span className="stat-label">Favorite Genres</span>
+                <span className="stat-label">Genres</span>
               </div>
             </div>
           </div>
@@ -228,120 +339,355 @@ const Profile = () => {
           </div>
         )}
 
-        {/* Profile Content */}
-        <div className="profile-content">
-          {/* Profile Settings */}
-          <div className="profile-section">
-            <h2>Profile Information</h2>
-            <div className="profile-form">
-              <div className="form-group">
-                <label htmlFor="displayName">Display Name</label>
-                <input
-                  type="text"
-                  id="displayName"
-                  name="displayName"
-                  value={profileData.displayName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  placeholder="Enter your display name"
-                />
-              </div>
+        {/* Tab Navigation */}
+        <div className="profile-tabs">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span className="tab-emoji">{tab.icon}</span>
+              <span className="tab-label">{tab.label}</span>
+            </button>
+          ))}
+        </div>
 
-              <div className="form-group">
-                <label htmlFor="email">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={profileData.email}
-                  disabled
-                  className="disabled-input"
-                />
-                <small>Email cannot be changed</small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="preferredLanguage">Preferred Language</label>
-                <select
-                  id="preferredLanguage"
-                  name="preferredLanguage"
-                  value={profileData.preferredLanguage}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                >
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                  <option value="it">Italian</option>
-                  <option value="ja">Japanese</option>
-                  <option value="ko">Korean</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Favorite Genres */}
-          <div className="profile-section">
-            <h2>Favorite Genres</h2>
-            <div className="genres-grid">
-              {genres.map(genre => (
-                <button
-                  key={genre}
-                  className={`genre-tag ${profileData.favoriteGenres.includes(genre) ? 'selected' : ''}`}
-                  onClick={() => isEditing && handleGenreToggle(genre)}
-                  disabled={!isEditing}
-                >
-                  {genre}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Watchlist Section */}
-          <div className="profile-section">
-            <div className="section-header">
-              <h2>My Watchlist</h2>
-              <button 
-                className="view-all-btn"
-                onClick={() => navigate('/watchlist')}
-              >
-                View All
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
-                </svg>
-              </button>
-            </div>
-            
-            {watchlistLoading ? (
-              <div className="watchlist-loading">
-                <div className="loading-spinner"></div>
-                <p>Loading watchlist...</p>
-              </div>
-            ) : watchlist.length > 0 ? (
-              <div className="watchlist-preview">
-                {watchlist.slice(0, 6).map(movie => (
-                  <div key={movie.id} className="watchlist-item">
-                    <MovieCard movie={movie} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-watchlist">
-                <svg viewBox="0 0 24 24">
-                  <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-                </svg>
-                <h3>Your watchlist is empty</h3>
-                <p>Start adding movies and shows you want to watch!</p>
+        {/* Delete Account Modal */}
+        {showDeleteModal && (
+          <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+            <div className="delete-account-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Delete Account</h2>
                 <button 
-                  className="explore-btn"
-                  onClick={() => navigate('/movies')}
+                  className="modal-close"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
                 >
-                  Explore Movies
+                  <svg viewBox="0 0 24 24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
                 </button>
               </div>
-            )}
+              
+              <div className="modal-content">
+                <div className="warning-section">
+                  <div className="warning-icon">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                  </div>
+                  <h3>This action cannot be undone</h3>
+                  <p>
+                    Deleting your account will permanently remove:
+                  </p>
+                  <ul>
+                    <li>Your profile information</li>
+                    <li>Your watchlist ({watchlist.length} items)</li>
+                    <li>Your watch history ({watchedMovies.length} items)</li>
+                    <li>Your preferences and settings</li>
+                    <li>All associated account data</li>
+                  </ul>
+                </div>
+                
+                <div className="confirmation-section">
+                  <label htmlFor="deleteConfirm">
+                    Type <strong>DELETE</strong> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    id="deleteConfirm"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="Type DELETE here"
+                    disabled={isDeleting}
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+              
+              <div className="modal-actions">
+                <button 
+                  className="cancel-btn"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="delete-btn"
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting || deleteConfirmText !== 'DELETE'}
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="button-spinner"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Account'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
+        )}
+
+        {/* Tab Content */}
+        <div className="profile-content">
+          {activeTab === 'profile' && (
+            <div className="profile-section">
+              <h2>Profile Information</h2>
+              <div className="profile-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="firstName">First Name</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={profileData.firstName}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      placeholder="Enter your first name"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="lastName">Last Name</label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={profileData.lastName}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      placeholder="Enter your last name"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={profileData.email}
+                    disabled
+                    className="disabled-input"
+                  />
+                  <small>Email cannot be changed</small>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="preferredLanguage">Preferred Language</label>
+                    <select
+                      id="preferredLanguage"
+                      name="preferredLanguage"
+                      value={profileData.preferredLanguage}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    >
+                      <option value="en">English</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                      <option value="it">Italian</option>
+                      <option value="ja">Japanese</option>
+                      <option value="ko">Korean</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="privacy">Privacy Setting</label>
+                    <select
+                      id="privacy"
+                      name="privacy"
+                      value={profileData.privacy}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    >
+                      <option value="public">Public</option>
+                      <option value="friends">Friends Only</option>
+                      <option value="private">Private</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="notifications"
+                      checked={profileData.notifications}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    />
+                    <span className="checkbox-custom"></span>
+                    Enable email notifications
+                  </label>
+                </div>
+              </div>
+
+              {/* Favorite Genres */}
+              <div className="genres-section">
+                <h3>Favorite Genres</h3>
+                <div className="genres-grid">
+                  {genres.map(genre => (
+                    <button
+                      key={genre}
+                      className={`genre-tag ${profileData.favoriteGenres.includes(genre) ? 'selected' : ''}`}
+                      onClick={() => isEditing && handleGenreToggle(genre)}
+                      disabled={!isEditing}
+                    >
+                      {genre}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="danger-zone">
+                <h3>Danger Zone</h3>
+                <div className="danger-zone-content">
+                  <div className="danger-zone-info">
+                    <h4>Delete Account</h4>
+                    <p>
+                      Permanently delete your NextWatch account and all associated data. 
+                      This action cannot be undone.
+                    </p>
+                  </div>
+                  <button 
+                    className="danger-btn"
+                    onClick={() => setShowDeleteModal(true)}
+                    disabled={saving}
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'watchlist' && (
+            <div className="profile-section">
+              <div className="section-header">
+                <h2>My Watchlist ({watchlist.length})</h2>
+                <button 
+                  className="view-all-btn"
+                  onClick={() => navigate('/watchlist')}
+                >
+                  View All
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                  </svg>
+                </button>
+              </div>
+              
+              {watchlistLoading ? (
+                <div className="watchlist-loading">
+                  <div className="loading-spinner"></div>
+                  <p>Loading watchlist...</p>
+                </div>
+              ) : watchlist.length > 0 ? (
+                <div className="content-grid">
+                  {watchlist.slice(0, 12).map(movie => (
+                    <div key={movie.id} className="content-item">
+                      <MovieCard movie={movie} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-section">
+                  <div className="empty-icon">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                  </div>
+                  <h3>Your watchlist is empty</h3>
+                  <p>Start adding movies and shows you want to watch!</p>
+                  <button 
+                    className="explore-btn"
+                    onClick={() => navigate('/movies')}
+                  >
+                    Explore Movies
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'watched' && (
+            <div className="profile-section">
+              <div className="section-header">
+                <h2>Recently Watched ({watchedMovies.length})</h2>
+              </div>
+              
+              {watchedMovies.length > 0 ? (
+                <div className="content-grid">
+                  {watchedMovies.slice(0, 12).map(movie => (
+                    <div key={movie.id} className="content-item">
+                      <MovieCard movie={movie} />
+                      <div className="watched-date">
+                        Watched on {formatDate(movie.watchedAt)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-section">
+                  <div className="empty-icon">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                  </div>
+                  <h3>No watched content yet</h3>
+                  <p>Mark movies and shows as watched to see them here!</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'stats' && (
+            <div className="profile-section">
+              <h2>Your Statistics</h2>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon">🎬</div>
+                  <div className="stat-content">
+                    <h3>{userStats.totalWatchedMovies}</h3>
+                    <p>Movies Watched</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📺</div>
+                  <div className="stat-content">
+                    <h3>{userStats.totalWatchedTVShows}</h3>
+                    <p>TV Shows Watched</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📚</div>
+                  <div className="stat-content">
+                    <h3>{watchlist.length}</h3>
+                    <p>Watchlist Items</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📅</div>
+                  <div className="stat-content">
+                    <h3>{formatDate(userStats.joinDate)}</h3>
+                    <p>Member Since</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

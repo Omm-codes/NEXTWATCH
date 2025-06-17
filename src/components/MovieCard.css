@@ -103,10 +103,34 @@
   background-color: #f40612;
 }
 
+.watchlist-button.requires-auth {
+  background: rgba(255, 193, 7, 0.8);
+  border-color: rgba(255, 193, 7, 0.6);
+}
+
+.watchlist-button.requires-auth:hover {
+  background: rgba(255, 193, 7, 1);
+  transform: translateY(-2px) scale(1.1);
+}
+
+.watchlist-button.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
 .watchlist-icon {
   width: 16px;
   height: 16px;
   fill: white;
+}
+
+.watchlist-icon.loading-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Movie info section - simplified */

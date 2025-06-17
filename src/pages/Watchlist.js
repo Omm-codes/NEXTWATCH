@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { 
+  getUserWatchlist, 
+  getUserWatchedMovies, 
+  removeFromWatchlist, 
+  markAsWatched,
+  removeFromWatched
+} from '../services/firebase';
 import MovieCard from '../components/MovieCard';
 import './Watchlist.css';
 
@@ -7,122 +15,120 @@ const Watchlist = () => {
   const [watchlist, setWatchlist] = useState([]);
   const [watchedMovies, setWatchedMovies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('towatch'); // 'towatch' or 'watched'
+  const [activeTab, setActiveTab] = useState('towatch');
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadWatchlist = () => {
+    if (!user) {
+      navigate('/login', { 
+        state: { 
+          from: { pathname: '/watchlist' },
+          message: 'Please sign in to access your watchlist' 
+        }
+      });
+      return;
+    }
+
+    const loadWatchlistData = async () => {
       setLoading(true);
-      
-      // Load regular watchlist
-      const savedWatchlist = localStorage.getItem('nextwatch-watchlist');
-      if (savedWatchlist) {
-        try {
-          setWatchlist(JSON.parse(savedWatchlist));
-        } catch (e) {
-          console.error('Failed to parse watchlist from localStorage');
+      try {
+        const [watchlistResult, watchedResult] = await Promise.all([
+          getUserWatchlist(user.uid),
+          getUserWatchedMovies(user.uid)
+        ]);
+
+        if (!watchlistResult.error) {
+          setWatchlist(watchlistResult.watchlist || []);
+        } else {
+          console.error('Failed to load watchlist:', watchlistResult.error);
           setWatchlist([]);
         }
-      }
-      
-      // Load watched movies
-      const savedWatchedMovies = localStorage.getItem('nextwatch-watched');
-      if (savedWatchedMovies) {
-        try {
-          setWatchedMovies(JSON.parse(savedWatchedMovies));
-        } catch (e) {
-          console.error('Failed to parse watched movies from localStorage');
+
+        if (!watchedResult.error) {
+          setWatchedMovies(watchedResult.watchedMovies || []);
+        } else {
+          console.error('Failed to load watched movies:', watchedResult.error);
           setWatchedMovies([]);
         }
-      }
-      
-      setLoading(false);
-    };
-
-    loadWatchlist();
-
-    // Listen for storage changes to update watchlist in real-time
-    const handleStorageChange = (e) => {
-      if (e.key === 'nextwatch-watchlist' || e.key === 'nextwatch-watched') {
-        loadWatchlist();
+      } catch (error) {
+        console.error('Error loading watchlist data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Custom event listener for same-tab updates
-    const handleWatchlistUpdate = () => {
-      loadWatchlist();
-    };
-    
-    window.addEventListener('watchlistUpdated', handleWatchlistUpdate);
+    loadWatchlistData();
+  }, [user, navigate]);
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('watchlistUpdated', handleWatchlistUpdate);
-    };
-  }, []);
+  const handleRemoveFromWatchlist = async (movieId) => {
+    if (!user) return;
 
-  const removeFromWatchlist = (movieId) => {
-    const updatedWatchlist = watchlist.filter(movie => movie.id !== movieId);
-    setWatchlist(updatedWatchlist);
-    localStorage.setItem('nextwatch-watchlist', JSON.stringify(updatedWatchlist));
-    
-    // Dispatch custom event for same-tab updates
-    window.dispatchEvent(new CustomEvent('watchlistUpdated'));
-  };
-
-  const markAsWatched = (movie) => {
-    // Remove from watchlist
-    const updatedWatchlist = watchlist.filter(item => item.id !== movie.id);
-    setWatchlist(updatedWatchlist);
-    localStorage.setItem('nextwatch-watchlist', JSON.stringify(updatedWatchlist));
-    
-    // Add to watched movies with timestamp
-    const watchedMovie = {
-      ...movie,
-      watchedDate: new Date().toISOString()
-    };
-    
-    const updatedWatchedMovies = [...watchedMovies, watchedMovie];
-    setWatchedMovies(updatedWatchedMovies);
-    localStorage.setItem('nextwatch-watched', JSON.stringify(updatedWatchedMovies));
-    
-    // Dispatch custom event for same-tab updates
-    window.dispatchEvent(new CustomEvent('watchlistUpdated'));
-  };
-
-  const markAsUnwatched = (movie) => {
-    // Remove from watched movies
-    const updatedWatchedMovies = watchedMovies.filter(item => item.id !== movie.id);
-    setWatchedMovies(updatedWatchedMovies);
-    localStorage.setItem('nextwatch-watched', JSON.stringify(updatedWatchedMovies));
-    
-    // Add back to watchlist (remove watchedDate)
-    const { watchedDate, ...movieWithoutDate } = movie;
-    const updatedWatchlist = [...watchlist, movieWithoutDate];
-    setWatchlist(updatedWatchlist);
-    localStorage.setItem('nextwatch-watchlist', JSON.stringify(updatedWatchlist));
-    
-    // Dispatch custom event for same-tab updates
-    window.dispatchEvent(new CustomEvent('watchlistUpdated'));
-  };
-
-  const removeFromWatched = (movieId) => {
-    const updatedWatchedMovies = watchedMovies.filter(movie => movie.id !== movieId);
-    setWatchedMovies(updatedWatchedMovies);
-    localStorage.setItem('nextwatch-watched', JSON.stringify(updatedWatchedMovies));
-    
-    // Dispatch custom event for same-tab updates
-    window.dispatchEvent(new CustomEvent('watchlistUpdated'));
-  };
-
-  const clearAllWatched = () => {
-    if (window.confirm('Are you sure you want to clear all watched movies? This action cannot be undone.')) {
-      setWatchedMovies([]);
-      localStorage.removeItem('nextwatch-watched');
-      window.dispatchEvent(new CustomEvent('watchlistUpdated'));
+    try {
+      const { error } = await removeFromWatchlist(user.uid, movieId);
+      if (!error) {
+        setWatchlist(prev => prev.filter(movie => movie.id !== movieId));
+      }
+    } catch (error) {
+      console.error('Error removing from watchlist:', error);
     }
   };
+
+  const handleMarkAsWatched = async (movie) => {
+    if (!user) return;
+
+    try {
+      await Promise.all([
+        removeFromWatchlist(user.uid, movie.id),
+        markAsWatched(user.uid, movie)
+      ]);
+      setWatchlist(prev => prev.filter(item => item.id !== movie.id));
+      setWatchedMovies(prev => [...prev, { ...movie, watchedAt: new Date().toISOString() }]);
+    } catch (error) {
+      console.error('Error marking as watched:', error);
+    }
+  };
+
+  const handleMarkAsUnwatched = (movie) => {
+    const updatedWatchedMovies = watchedMovies.filter(item => item.id !== movie.id);
+    setWatchedMovies(updatedWatchedMovies);
+
+    const { watchedDate, watchedAt, ...movieWithoutDate } = movie;
+    const updatedWatchlist = [...watchlist, movieWithoutDate];
+    setWatchlist(updatedWatchlist);
+  };
+
+  const handleRemoveFromWatched = async (movieId) => {
+    if (!user) return;
+
+    try {
+      const { error } = await removeFromWatched(user.uid, movieId);
+      if (!error) {
+        setWatchedMovies(prev => prev.filter(movie => movie.id !== movieId));
+      }
+    } catch (error) {
+      console.error('Error removing from watched:', error);
+    }
+  };
+
+  const clearAllWatched = async () => {
+    if (!user) return;
+    
+    if (window.confirm('Are you sure you want to clear all watched movies? This action cannot be undone.')) {
+      try {
+        // Remove all watched movies from Firebase
+        const removePromises = watchedMovies.map(movie => removeFromWatched(user.uid, movie.id));
+        await Promise.all(removePromises);
+        setWatchedMovies([]);
+      } catch (error) {
+        console.error('Error clearing watched movies:', error);
+      }
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -148,10 +154,9 @@ const Watchlist = () => {
           </div>
         )}
       </div>
-      
+
       {totalMovies > 0 ? (
         <>
-          {/* Tab Navigation */}
           <div className="watchlist-tabs">
             <button 
               className={`tab-button ${activeTab === 'towatch' ? 'active' : ''}`}
@@ -173,7 +178,6 @@ const Watchlist = () => {
             </button>
           </div>
 
-          {/* Clear All Button for Watched Tab */}
           {activeTab === 'watched' && watchedMovies.length > 0 && (
             <div className="section-actions">
               <button onClick={clearAllWatched} className="clear-all-btn">
@@ -184,21 +188,19 @@ const Watchlist = () => {
               </button>
             </div>
           )}
-          
-          {/* Movies Grid */}
+
           {currentMovies.length > 0 ? (
             <div className="watchlist-grid">
               {currentMovies.map(movie => (
                 <div key={movie.id} className="watchlist-card">
                   <MovieCard movie={movie} />
-                  
-                  {/* Action buttons based on current tab */}
+
                   <div className="movie-actions">
                     {activeTab === 'towatch' ? (
                       <>
                         <button 
                           className="action-btn watched-btn" 
-                          onClick={() => markAsWatched(movie)}
+                          onClick={() => handleMarkAsWatched(movie)}
                           title="Mark as watched"
                         >
                           <svg viewBox="0 0 24 24">
@@ -208,7 +210,7 @@ const Watchlist = () => {
                         </button>
                         <button 
                           className="action-btn remove-btn" 
-                          onClick={() => removeFromWatchlist(movie.id)}
+                          onClick={() => handleRemoveFromWatchlist(movie.id)}
                           title="Remove from watchlist"
                         >
                           <svg viewBox="0 0 24 24">
@@ -221,7 +223,7 @@ const Watchlist = () => {
                       <>
                         <button 
                           className="action-btn unwatch-btn" 
-                          onClick={() => markAsUnwatched(movie)}
+                          onClick={() => handleMarkAsUnwatched(movie)}
                           title="Mark as unwatched"
                         >
                           <svg viewBox="0 0 24 24">
@@ -231,7 +233,7 @@ const Watchlist = () => {
                         </button>
                         <button 
                           className="action-btn remove-btn" 
-                          onClick={() => removeFromWatched(movie.id)}
+                          onClick={() => handleRemoveFromWatched(movie.id)}
                           title="Remove from history"
                         >
                           <svg viewBox="0 0 24 24">
@@ -242,11 +244,10 @@ const Watchlist = () => {
                       </>
                     )}
                   </div>
-                  
-                  {/* Watched date for watched movies */}
-                  {activeTab === 'watched' && movie.watchedDate && (
+
+                  {activeTab === 'watched' && (movie.watchedDate || movie.watchedAt) && (
                     <div className="watched-date">
-                      Watched on {new Date(movie.watchedDate).toLocaleDateString()}
+                      Watched on {new Date(movie.watchedDate || movie.watchedAt).toLocaleDateString()}
                     </div>
                   )}
                 </div>

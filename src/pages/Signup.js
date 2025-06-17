@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createUserAccount, signInWithGoogle } from '../services/firebase';
+import { createUserAccount, signUpWithGoogle } from '../services/firebase';
 import './Auth.css';
 
 const SignUp = () => {
@@ -80,9 +80,12 @@ const SignUp = () => {
       
       if (error) {
         if (error.includes('email-already-in-use')) {
-          setErrors({ email: 'An account with this email address already exists' });
+          setErrors({ 
+            email: 'An account with this email already exists. Please sign in instead.',
+            general: 'Account already exists. Try signing in or use a different email address.'
+          });
         } else if (error.includes('weak-password')) {
-          setErrors({ password: 'Password is too weak. Please choose a stronger password.' });
+          setErrors({ password: 'Password is too weak. Please choose a stronger password (at least 6 characters).' });
         } else if (error.includes('invalid-email')) {
           setErrors({ email: 'Invalid email address' });
         } else {
@@ -103,11 +106,12 @@ const SignUp = () => {
     setLoading(true);
     
     try {
-      const { user, error } = await signInWithGoogle();
+      const { user, profile, error } = await signUpWithGoogle();
       
       if (error) {
         setErrors({ general: 'Google sign-up failed. Please try again.' });
       } else {
+        // For Google signup, we create account or sign in existing user
         navigate('/', { replace: true });
       }
     } catch (error) {
@@ -259,6 +263,11 @@ const SignUp = () => {
               <Link to="/login" className="auth-link">
                 Sign in here
               </Link>
+            </p>
+            <p className="auth-note">
+              <small>
+                By creating an account, you agree to our Terms of Service and Privacy Policy.
+              </small>
             </p>
           </div>
         </div>

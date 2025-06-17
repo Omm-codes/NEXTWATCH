@@ -1,23 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { getMovieDetails, getTVShowDetails, getMovieVideos, getTVShowVideos, API_IMAGE_URL, POSTER_SIZE, BACKDROP_SIZE } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import './MovieDetails.css';
 import defaultPoster from '../assets/default-movie.png';
 import { DetailsSkeleton } from '../components/LoadingSkeleton';
+import { useAuth } from '../contexts/AuthContext';
+import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../services/firebase';
 
 const MovieDetails = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [isInWatchlistState, setIsInWatchlistState] = useState(false); // Renamed to avoid conflict
   const [showTrailer, setShowTrailer] = useState(false);
   const [showMoviePlayer, setShowMoviePlayer] = useState(false);
   const [trailerKey, setTrailerKey] = useState(null);
   const [trailerLoading, setTrailerLoading] = useState(false);
   const [showFullOverview, setShowFullOverview] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
 
   // Determine if this is a TV show or movie based on the route
   const isTV = location.pathname.startsWith('/tv/');
@@ -46,8 +51,15 @@ const MovieDetails = () => {
         
         setMovie(data);
         
-        const watchlist = JSON.parse(localStorage.getItem('nextwatch-watchlist')) || [];
-        setIsInWatchlist(watchlist.some(item => item.id === parseInt(id)));
+        if (user) {
+          // For authenticated users, check Firebase
+          const { isInList } = await isInWatchlist(user.uid, parseInt(id));
+          setIsInWatchlistState(isInList);
+        } else {
+          // For non-authenticated users, check localStorage
+          const watchlist = JSON.parse(localStorage.getItem('nextwatch-watchlist')) || [];
+          setIsInWatchlistState(watchlist.some(item => item.id === parseInt(id)));
+        }
         
         setError(null);
         document.title = `${data.title} - NextWatch`;
@@ -66,36 +78,51 @@ const MovieDetails = () => {
     return () => {
       document.title = 'NextWatch';
     };
-  }, [id, isTV]);
+  }, [id, isTV, user]);
 
-  const handleWatchlistToggle = () => {
+  const handleWatchlistToggle = async () => {
     if (!movie) return;
     
-    let watchlist = JSON.parse(localStorage.getItem('nextwatch-watchlist')) || [];
-    
-    if (isInWatchlist) {
-      watchlist = watchlist.filter(item => item.id !== parseInt(id));
-      setIsInWatchlist(false);
-    } else {
-      const movieToAdd = {
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-        release_date: movie.release_date,
-        vote_average: movie.vote_average,
-        overview: movie.overview,
-        media_type: movie.media_type || (isTV ? 'tv' : 'movie')
-      };
-      
-      const existingIndex = watchlist.findIndex(item => item.id === movie.id);
-      if (existingIndex === -1) {
-        watchlist.push(movieToAdd);
-        setIsInWatchlist(true);
-      }
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { 
+        state: { 
+          from: location,
+          message: 'Please sign in to add movies to your watchlist' 
+        }
+      });
+      return;
     }
+
+    setWatchlistLoading(true);
     
-    localStorage.setItem('nextwatch-watchlist', JSON.stringify(watchlist));
-    window.dispatchEvent(new CustomEvent('watchlistUpdated'));
+    try {
+      if (isInWatchlistState) {
+        const { error } = await removeFromWatchlist(user.uid, movie.id);
+        if (!error) {
+          setIsInWatchlistState(false);
+        }
+      } else {
+        const movieData = {
+          id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+          release_date: movie.release_date,
+          vote_average: movie.vote_average,
+          overview: movie.overview,
+          media_type: movie.media_type || (isTV ? 'tv' : 'movie')
+        };
+        
+        const { error } = await addToWatchlist(user.uid, movieData);
+        if (!error) {
+          setIsInWatchlistState(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating watchlist:', error);
+    } finally {
+      setWatchlistLoading(false);
+    }
   };
 
   const handleWatchTrailer = async () => {
@@ -401,17 +428,20 @@ const MovieDetails = () => {
               </button>
               
               <button 
-                className={`btn btn-secondary btn-large ${isInWatchlist ? 'in-watchlist' : ''}`}
+                className={`btn btn-secondary btn-large ${isInWatchlistState ? 'in-watchlist' : ''} ${!user ? 'requires-auth' : ''}`}
                 onClick={handleWatchlistToggle}
+                disabled={watchlistLoading}
               >
                 <svg className="btn-icon" viewBox="0 0 24 24">
-                  {isInWatchlist ? (
+                  {!user ? (
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  ) : isInWatchlistState ? (
                     <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
                   ) : (
                     <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
                   )}
                 </svg>
-                {isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
+                {watchlistLoading ? 'Loading...' : !user ? 'Sign in to Add' : isInWatchlistState ? 'In Watchlist' : 'Add to Watchlist'}
               </button>
             </div>
           </div>
