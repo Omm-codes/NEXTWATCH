@@ -25,6 +25,18 @@ import {
   getDocs,
   deleteDoc
 } from 'firebase/firestore';
+import { 
+  getStorage, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject 
+} from 'firebase/storage';
+import { 
+  getMessaging, 
+  getToken, 
+  onMessage 
+} from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -39,6 +51,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+// Initialize messaging only if supported
+let messaging = null;
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  try {
+    messaging = getMessaging(app);
+  } catch (error) {
+    console.log('Firebase messaging not supported:', error);
+  }
+}
+export { messaging };
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
@@ -613,4 +637,3 @@ export const updateUserProfileSimple = async (userId, profileData, photoFile = n
 
 export default app;
 
-    

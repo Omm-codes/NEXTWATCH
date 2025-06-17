@@ -9,6 +9,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import OfflineIndicator from './components/OfflineIndicator';
 
 // Pages 
 import Home from './pages/Home';
@@ -45,6 +46,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className={`App ${theme}`}>
+          <OfflineIndicator />
           <ScrollToTop />
           <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
           <main className="main-content">
