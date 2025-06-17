@@ -18,17 +18,22 @@ root.render(
 reportWebVitals();
 
 // Register service worker for PWA functionality
-if (process.env.NODE_ENV === 'production') {
-  serviceWorkerRegistration.register({
-    onSuccess: (registration) => {
-      console.log('PWA: Service worker registered successfully');
-    },
-    onUpdate: (registration) => {
-      console.log('PWA: New content available, please refresh.');
+serviceWorkerRegistration.register({
+  onSuccess: (registration) => {
+    console.log('PWA: Service worker registered successfully');
+    
+    // Check for updates every 60 seconds when app is in use
+    setInterval(() => {
+      registration.update();
+    }, 60000);
+  },
+  onUpdate: (registration) => {
+    console.log('PWA: New content available, please refresh.');
+    
+    // Automatically update service worker and reload
+    if (registration && registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
     }
-  });
-} else {
-  // In development, you can still register for testing
-  // serviceWorkerRegistration.register();
-  console.log('PWA: Service worker registration skipped in development');
-}
+  }
+});

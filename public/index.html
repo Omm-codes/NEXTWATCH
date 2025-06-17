@@ -20,27 +20,17 @@
     <meta property="og:url" content="https://nextwatch.app/" />
     <meta property="og:title" content="NextWatch - Your Personal Cinema Companion" />
     <meta property="og:description" content="Discover amazing movies, TV shows, and web series with personalized recommendations. Never wonder what to watch next!" />
-    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta property="og:image" content="%PUBLIC_URL%/android-chrome-512x512.png" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://nextwatch.app/" />
     <meta property="twitter:title" content="NextWatch - Your Personal Cinema Companion" />
     <meta property="twitter:description" content="Discover amazing movies, TV shows, and web series with personalized recommendations." />
-    <meta property="twitter:image" content="%PUBLIC_URL%/twitter-image.png" />
+    <meta property="twitter:image" content="%PUBLIC_URL%/android-chrome-512x512.png" />
     
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/apple-touch-icon-57x57.png" />
-    <link rel="apple-touch-icon" sizes="60x60" href="%PUBLIC_URL%/apple-touch-icon-60x60.png" />
-    <link rel="apple-touch-icon" sizes="72x72" href="%PUBLIC_URL%/apple-touch-icon-72x72.png" />
-    <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/apple-touch-icon-76x76.png" />
-    <link rel="apple-touch-icon" sizes="114x114" href="%PUBLIC_URL%/apple-touch-icon-114x114.png" />
-    <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/apple-touch-icon-120x120.png" />
-    <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/apple-touch-icon-152x152.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon-180x180.png" />
-    
-    <!-- Favicon -->
+    <!-- Essential PWA Icons -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
     
@@ -159,6 +149,16 @@
         if (lastDismissed && Date.now() - lastDismissed < 7 * 24 * 60 * 60 * 1000) {
           document.body.removeChild(installBanner);
         }
+      });
+      
+      // Handle successful installation
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('NextWatch PWA was installed successfully');
+        localStorage.setItem('nextwatch-pwa-installed', 'true');
+      });
+    </script>
+  </body>
+</html>
       });
       
       // Handle successful installation
