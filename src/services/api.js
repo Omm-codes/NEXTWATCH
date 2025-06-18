@@ -227,6 +227,14 @@ export const searchTVShows = (query, page = 1) => {
   });
 };
 
+// Multi-search functionality (movies, TV shows, and people)
+export const searchMulti = (query, page = 1) => {
+  return getApiData('/search/multi', { 
+    query,
+    page 
+  });
+};
+
 // TV Show genres
 export const getTVGenres = () => {
   return getApiData('/genre/tv/list');

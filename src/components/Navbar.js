@@ -4,7 +4,7 @@ import { searchMovies } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { logoutUser, getProfilePhotoLocally } from '../services/firebase';
 import logo from '../assets/logo.png';
-import './Navbar.css';;
+import './Navbar.css';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,9 +14,9 @@ const Navbar = () => {
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [localPhotoURL, setLocalPhotoURL] = useState(null);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,106 +29,19 @@ const Navbar = () => {
     // Close mobile menu when route changes
     setMobileMenuOpen(false);
     setShowUserMenu(false);
+    setSearchExpanded(false);
   }, [location.pathname]);
 
-  // Auto-hide navbar functionality - now using transparency
+  // Netflix-style scroll behavior
   useEffect(() => {
-    let hideTimer;
-
-    const handleMouseMove = (e) => {
-      const mouseY = e.clientY;
-      
-      // Show navbar fully when mouse is in the top 80px of the screen
-      if (mouseY <= 80) {
-        if (!isVisible) {
-          setIsVisible(true);
-        }
-        clearTimeout(hideTimer);
-      } else {
-        // Make navbar transparent when mouse moves away from top area
-        if (isVisible) {
-          clearTimeout(hideTimer);
-          hideTimer = setTimeout(() => {
-            setIsVisible(false);
-          }, 500); // Slightly longer delay for better UX
-        }
-      }
-    };
-
-    const handleMouseEnter = () => {
-      setIsVisible(true);
-      clearTimeout(hideTimer);
-    };
-
-    const handleMouseLeave = (e) => {
-      const mouseY = e.clientY;
-      // Make transparent if mouse leaves navbar and is not in top area
-      if (mouseY > 80) {
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => {
-          setIsVisible(false);
-        }, 300); // Quick transparency when leaving navbar
-      }
-    };
-
-    // Add global mouse move listener
-    document.addEventListener('mousemove', handleMouseMove);
-
-    // Add navbar-specific listeners
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-      navbar.addEventListener('mouseenter', handleMouseEnter);
-      navbar.addEventListener('mouseleave', handleMouseLeave);
-    }
-
-    // Keep navbar visible when mobile menu is open
-    if (mobileMenuOpen) {
-      setIsVisible(true);
-      clearTimeout(hideTimer);
-    }
-
-    // Make navbar transparent initially after component mounts
-    const initialHideTimer = setTimeout(() => {
-      if (!mobileMenuOpen) {
-        setIsVisible(false);
-      }
-    }, 4000); // Make transparent after 4 seconds initially
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      if (navbar) {
-        navbar.removeEventListener('mouseenter', handleMouseEnter);
-        navbar.removeEventListener('mouseleave', handleMouseLeave);
-      }
-      clearTimeout(hideTimer);
-      clearTimeout(initialHideTimer);
-    };
-  }, [isVisible, mobileMenuOpen]);
-
-  // Handle scroll effect - show navbar briefly when scrolling
-  useEffect(() => {
-    let scrollTimer;
-    
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 20;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-
-      // Show navbar fully when scrolling, then make it transparent again
-      setIsVisible(true);
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        setIsVisible(false);
-      }, 1500); // Make transparent after 1.5 seconds of no scrolling
+      const isScrolled = window.scrollY > 50;
+      setScrolled(isScrolled);
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimer);
-    };
-  }, [scrolled]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Search suggestions functionality
   useEffect(() => {
@@ -172,6 +85,7 @@ const Navbar = () => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSuggestions(false);
         setSelectedSuggestion(-1);
+        setSearchExpanded(false);
       }
     };
 
@@ -189,14 +103,12 @@ const Navbar = () => {
       setShowSuggestions(false);
       setSelectedSuggestion(-1);
       setMobileMenuOpen(false);
+      setSearchExpanded(false);
     }
   };
 
   const handleSuggestionClick = (movie) => {
-    // Scroll to top immediately
     window.scrollTo(0, 0);
-    
-    // Check if it's a TV show based on available properties
     const isTV = movie.media_type === 'tv' || movie.first_air_date || movie.name;
     
     if (isTV) {
@@ -208,6 +120,7 @@ const Navbar = () => {
     setShowSuggestions(false);
     setSelectedSuggestion(-1);
     setMobileMenuOpen(false);
+    setSearchExpanded(false);
   };
 
   const handleLogout = async () => {
@@ -245,6 +158,7 @@ const Navbar = () => {
       case 'Escape':
         setShowSuggestions(false);
         setSelectedSuggestion(-1);
+        setSearchExpanded(false);
         break;
       default:
         break;
@@ -280,101 +194,93 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''} ${isVisible ? 'navbar-visible' : 'navbar-hidden'} ${mobileMenuOpen ? 'navbar-mobile-open' : ''}`}>
+    <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''} ${mobileMenuOpen ? 'navbar-mobile-open' : ''}`}>
       <div className="navbar-container">
-        <div className="navbar-brand">
-          <Link to="/">
-            <div className="logo-container">
+        {/* Left side - Logo and Navigation */}
+        <div className="navbar-left">
+          <div className="navbar-brand">
+            <Link to="/">
               <img src={logo} alt="NextWatch" className="logo-image" />
-            </div>
-          </Link>
-        </div>
-        
-        <button 
-          className={`navbar-toggler ${mobileMenuOpen ? 'active' : ''}`} 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle navigation"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
+            </Link>
+          </div>
+          
           <div className="navbar-links">
             <Link 
               to="/" 
               className={location.pathname === '/' ? 'active' : ''}
-              onClick={() => setMobileMenuOpen(false)}
             >
-              <svg className="nav-icon" viewBox="0 0 24 24">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-              </svg>
-              <span>Home</span>
+              Home
+            </Link>
+            
+            <Link 
+              to="/movies" 
+              className={location.pathname.startsWith('/movies') ? 'active' : ''}
+            >
+              Movies
+            </Link>
+            
+            <Link 
+              to="/tv" 
+              className={location.pathname.startsWith('/tv') ? 'active' : ''}
+            >
+              TV Shows
+            </Link>
+            
+            <Link 
+              to="/webseries" 
+              className={location.pathname.startsWith('/webseries') ? 'active' : ''}
+            >
+              Web Series
             </Link>
             
             <Link 
               to="/whattowatch" 
               className={location.pathname.startsWith('/whattowatch') ? 'active' : ''}
-              onClick={() => setMobileMenuOpen(false)}
             >
-              <svg className="nav-icon" viewBox="0 0 24 24">
-                <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14 14 11.99 14 9.5 11.99 5 9.5 5Z" />
-              </svg>
-              <span>What to Watch</span>
+              What to Watch
             </Link>
             
             <Link 
               to="/watchlist" 
               className={location.pathname.startsWith('/watchlist') ? 'active' : ''}
-              onClick={() => setMobileMenuOpen(false)}
             >
-              <svg className="nav-icon" viewBox="0 0 24 24">
-                <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-              </svg>
-              <span>My Watchlist</span>
+              My List
             </Link>
           </div>
-          
+        </div>
+
+        {/* Right side - Search and User */}
+        <div className="navbar-right">
           <div className="navbar-search" ref={searchRef}>
-            <form onSubmit={handleSearch}>
-              <div className="search-input-container">
+            <div className={`search-container ${searchExpanded ? 'expanded' : ''}`}>
+              <button 
+                className="search-toggle"
+                onClick={() => setSearchExpanded(!searchExpanded)}
+                aria-label="Toggle search"
+              >
                 <svg className="search-icon" viewBox="0 0 24 24">
                   <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                 </svg>
+              </button>
+              
+              <form onSubmit={handleSearch} className={`search-form ${searchExpanded ? 'visible' : ''}`}>
                 <input
                   type="text"
-                  placeholder="Search movies, shows..."
+                  placeholder="Titles, people, genres"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+                  onFocus={() => {
+                    setSearchExpanded(true);
+                    if (searchQuery.length >= 2) setShowSuggestions(true);
+                  }}
                   autoComplete="off"
                 />
-                <button 
-                  type="submit" 
-                  className="search-button"
-                  aria-label="Search"
-                  disabled={!searchQuery.trim()}
-                >
-                  {isSearching ? (
-                    <svg className="search-submit-icon" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" strokeDasharray="31.416" strokeDashoffset="31.416">
-                        <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
-                        <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
-                      </circle>
-                    </svg>
-                  ) : (
-                    <svg className="search-submit-icon" viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
             
             {/* Search Suggestions Dropdown */}
-            {showSuggestions && searchSuggestions.length > 0 && (
+            {showSuggestions && searchSuggestions.length > 0 && searchExpanded && (
               <div className="search-suggestions" ref={suggestionsRef}>
                 {searchSuggestions.map((movie, index) => (
                   <div
@@ -387,7 +293,7 @@ const Navbar = () => {
                       {movie.poster_path ? (
                         <img 
                           src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-                          alt={movie.title}
+                          alt={movie.title || movie.name}
                           loading="lazy"
                         />
                       ) : (
@@ -399,16 +305,11 @@ const Navbar = () => {
                       )}
                     </div>
                     <div className="suggestion-info">
-                      <div className="suggestion-title">{movie.title}</div>
+                      <div className="suggestion-title">{movie.title || movie.name}</div>
                       <div className="suggestion-year">
-                        {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+                        {movie.release_date ? new Date(movie.release_date).getFullYear() : 
+                         movie.first_air_date ? new Date(movie.first_air_date).getFullYear() : 'N/A'}
                       </div>
-                    </div>
-                    <div className="suggestion-rating">
-                      <svg className="star-icon" viewBox="0 0 24 24">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                      {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
                     </div>
                   </div>
                 ))}
@@ -430,77 +331,213 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="navbar-actions">
-            {user ? (
-              <div className="user-menu" ref={userMenuRef}>
-                <button 
-                  className="user-avatar"
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  aria-label="User menu"
-                >
-                  <div className="avatar-circle">
-                    {localPhotoURL ? (
-                      <img src={localPhotoURL} alt={userProfile?.displayName || user.displayName} />
-                    ) : user.photoURL ? (
-                      <img src={user.photoURL} alt={userProfile?.displayName || user.displayName} />
-                    ) : (
-                      <span>
-                        {userProfile?.firstName?.charAt(0) || 
-                         userProfile?.displayName?.charAt(0) || 
-                         user.displayName?.charAt(0) || 
-                         user.email?.charAt(0) || 'U'}
-                      </span>
-                    )}
-                  </div>
-                  <svg className={`dropdown-arrow ${showUserMenu ? 'open' : ''}`} viewBox="0 0 24 24">
-                    <path d="M7 10l5 5 5-5z"/>
-                  </svg>
-                </button>
-                
-                {showUserMenu && (
-                  <div className="user-dropdown">
-                    <div className="user-info">
+          {/* User Menu */}
+          {user ? (
+            <div className="user-menu" ref={userMenuRef}>
+              <button 
+                className="user-avatar"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                aria-label="User menu"
+              >
+                <div className="avatar-circle">
+                  {localPhotoURL ? (
+                    <img src={localPhotoURL} alt={userProfile?.displayName || user.displayName} />
+                  ) : user.photoURL ? (
+                    <img src={user.photoURL} alt={userProfile?.displayName || user.displayName} />
+                  ) : (
+                    <span>
+                      {userProfile?.firstName?.charAt(0) || 
+                       userProfile?.displayName?.charAt(0) || 
+                       user.displayName?.charAt(0) || 
+                       user.email?.charAt(0) || 'U'}
+                    </span>
+                  )}
+                  <div className="avatar-status"></div>
+                </div>
+                <div className="user-greeting">
+                  <span className="greeting-text">Hi, </span>
+                  <span className="user-name-text">
+                    {userProfile?.firstName || 
+                     userProfile?.displayName?.split(' ')[0] || 
+                     user.displayName?.split(' ')[0] || 
+                     'User'}
+                  </span>
+                </div>
+                <svg className={`dropdown-arrow ${showUserMenu ? 'open' : ''}`} viewBox="0 0 24 24">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </button>
+              
+              {showUserMenu && (
+                <div className="user-dropdown">
+                  <div className="user-info">
+                    <div className="user-avatar-large">
+                      {localPhotoURL ? (
+                        <img src={localPhotoURL} alt={userProfile?.displayName || user.displayName} />
+                      ) : user.photoURL ? (
+                        <img src={user.photoURL} alt={userProfile?.displayName || user.displayName} />
+                      ) : (
+                        <span>
+                          {userProfile?.firstName?.charAt(0) || 
+                           userProfile?.displayName?.charAt(0) || 
+                           user.displayName?.charAt(0) || 
+                           user.email?.charAt(0) || 'U'}
+                        </span>
+                      )}
+                      <div className="user-status-indicator"></div>
+                    </div>
+                    <div className="user-details">
                       <div className="user-name">
                         {userProfile?.firstName && userProfile?.lastName 
                           ? `${userProfile.firstName} ${userProfile.lastName}`
                           : userProfile?.displayName || user.displayName || 'User'}
                       </div>
                       <div className="user-email">{user.email}</div>
+                      {userProfile?.stats && (
+                        <div className="user-stats-preview">
+                          <span className="stat-item">
+                            <svg viewBox="0 0 24 24">
+                              <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                            </svg>
+                            {userProfile.stats.totalWatchlistItems || 0} in list
+                          </span>
+                          <span className="stat-item">
+                            <svg viewBox="0 0 24 24">
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            {(userProfile.stats.totalWatchedMovies || 0) + (userProfile.stats.totalWatchedTVShows || 0)} watched
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className="dropdown-divider"></div>
-                    <Link to="/profile" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                      <svg viewBox="0 0 24 24">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                      </svg>
-                      Profile
+                  </div>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <div className="dropdown-section">
+                    <Link to="/profile" className="dropdown-item primary" onClick={() => setShowUserMenu(false)}>
+                      <div className="dropdown-item-icon">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                      </div>
+                      <div className="dropdown-item-content">
+                        <span className="dropdown-item-title">Manage Profile</span>
+                        <span className="dropdown-item-subtitle">Edit your personal information</span>
+                      </div>
                     </Link>
+                    
                     <Link to="/watchlist" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                      <svg viewBox="0 0 24 24">
-                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-                      </svg>
-                      My Watchlist
+                      <div className="dropdown-item-icon">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                        </svg>
+                      </div>
+                      <div className="dropdown-item-content">
+                        <span className="dropdown-item-title">My Watchlist</span>
+                        <span className="dropdown-item-subtitle">Movies and shows to watch</span>
+                      </div>
                     </Link>
-                    <div className="dropdown-divider"></div>
+                    
+                    <Link to="/whattowatch" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                      <div className="dropdown-item-icon">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3z"/>
+                        </svg>
+                      </div>
+                      <div className="dropdown-item-content">
+                        <span className="dropdown-item-title">What to Watch</span>
+                        <span className="dropdown-item-subtitle">Get personalized recommendations</span>
+                      </div>
+                    </Link>
+                  </div>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <div className="dropdown-section">
                     <button className="dropdown-item logout" onClick={handleLogout}>
-                      <svg viewBox="0 0 24 24">
-                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-                      </svg>
-                      Sign Out
+                      <div className="dropdown-item-icon">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                      </div>
+                      <div className="dropdown-item-content">
+                        <span className="dropdown-item-title">Sign Out</span>
+                        <span className="dropdown-item-subtitle">Sign out of NextWatch</span>
+                      </div>
                     </button>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="auth-links">
-                <Link to="/login" className="auth-link login">Log In</Link>
-                <Link to="/signup" className="auth-link signup">Sign Up</Link>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="auth-links">
+              <Link to="/signup" className="signup-btn">Sign Up</Link>
+              <Link to="/login" className="login-btn">Sign In</Link>
+            </div>
+          )}
         </div>
+
+        {/* Mobile menu toggle */}
+        <button 
+          className={`navbar-toggler ${mobileMenuOpen ? 'active' : ''}`} 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle navigation"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
-      
-      {mobileMenuOpen && <div className="backdrop" onClick={() => setMobileMenuOpen(false)}></div>}
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <>
+          <div className="mobile-menu">
+            <div className="mobile-menu-content">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+              <Link to="/movies" onClick={() => setMobileMenuOpen(false)}>Movies</Link>
+              <Link to="/tv" onClick={() => setMobileMenuOpen(false)}>TV Shows</Link>
+              <Link to="/webseries" onClick={() => setMobileMenuOpen(false)}>Web Series</Link>
+              <Link to="/whattowatch" onClick={() => setMobileMenuOpen(false)}>What to Watch</Link>
+              <Link to="/watchlist" onClick={() => setMobileMenuOpen(false)}>My List</Link>
+              
+              {!user && (
+                <div className="mobile-auth">
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-login-btn">
+                    Sign In
+                  </Link>
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="mobile-signup-btn">
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+              
+              <div className="mobile-search">
+                <form onSubmit={handleSearch}>
+                  <div className="mobile-search-container">
+                    <svg className="mobile-search-icon" viewBox="0 0 24 24">
+                      <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search movies, shows..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <button type="submit" className="mobile-search-btn">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div className="backdrop" onClick={() => setMobileMenuOpen(false)}></div>
+        </>
+      )}
     </nav>
   );
 };
