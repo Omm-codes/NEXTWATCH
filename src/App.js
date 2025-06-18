@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import './styles/App.css'; // Updated import path
 
 // Context
@@ -45,10 +46,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className={`App ${theme}`}>
-          <OfflineIndicator />
+        <div className="App">
           <ScrollToTop />
-          <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
+          <OfflineIndicator />
+          <Navbar />
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -73,6 +74,7 @@ function App() {
           </main>
           <Footer />
         </div>
+        <Analytics />
       </Router>
     </AuthProvider>
   );
