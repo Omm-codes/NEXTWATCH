@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { submitFeedback } from '../services/firebase';
 import './Contact.css';
 
 const Contact = () => {
@@ -76,21 +77,25 @@ const Contact = () => {
     setSubmitStatus(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Submit to Firebase
+      const { error, id } = await submitFeedback(formData);
       
-      // In a real app, you would send this to your backend
-      console.log('Form submitted:', formData);
-      
-      setSubmitStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-        type: 'general'
-      });
+      if (error) {
+        console.error('Error submitting feedback:', error);
+        setSubmitStatus('error');
+      } else {
+        console.log('Feedback submitted successfully with ID:', id);
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+          type: 'general'
+        });
+      }
     } catch (error) {
+      console.error('Error submitting feedback:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

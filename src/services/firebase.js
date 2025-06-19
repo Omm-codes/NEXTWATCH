@@ -23,7 +23,8 @@ import {
   query,
   where,
   getDocs,
-  deleteDoc
+  deleteDoc,
+  orderBy
 } from 'firebase/firestore';
 import { 
   getStorage, 
@@ -635,5 +636,72 @@ export const updateUserProfileSimple = async (userId, profileData, photoFile = n
   }
 };
 
-export default app;
+// Add function to submit feedback
+export const submitFeedback = async (feedbackData) => {
+  try {
+    const feedbackRef = collection(db, 'feedback');
+    const feedbackItem = {
+      ...feedbackData,
+      id: Date.now().toString(),
+      submittedAt: new Date().toISOString(),
+      status: 'new', // new, read, resolved
+      priority: feedbackData.type === 'bug' ? 'high' : 
+                feedbackData.type === 'support' ? 'medium' : 'normal'
+    };
+    
+    await setDoc(doc(feedbackRef, feedbackItem.id), feedbackItem);
+    return { error: null, id: feedbackItem.id };
+  } catch (error) {
+    console.error('Error submitting feedback:', error);
+    return { error: error.message };
+  }
+};
+
+// Add function to get all feedback (admin only)
+export const getAllFeedback = async () => {
+  try {
+    const feedbackRef = collection(db, 'feedback');
+    const q = query(feedbackRef, orderBy('submittedAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    
+    const feedback = [];
+    querySnapshot.forEach((doc) => {
+      feedback.push({ id: doc.id, ...doc.data() });
+    });
+    
+    return { feedback, error: null };
+  } catch (error) {
+    console.error('Error getting feedback:', error);
+    return { feedback: [], error: error.message };
+  }
+};
+
+// Add function to update feedback status
+export const updateFeedbackStatus = async (feedbackId, status) => {
+  try {
+    const feedbackRef = doc(db, 'feedback', feedbackId);
+    await updateDoc(feedbackRef, {
+      status,
+      updatedAt: new Date().toISOString()
+    });
+    return { error: null };
+  } catch (error) {
+    console.error('Error updating feedback status:', error);
+    return { error: error.message };
+  }
+};
+
+// Add function to delete feedback
+export const deleteFeedback = async (feedbackId) => {
+  try {
+    const feedbackRef = doc(db, 'feedback', feedbackId);
+    await deleteDoc(feedbackRef);
+    return { error: null };
+  } catch (error) {
+    console.error('Error deleting feedback:', error);
+    return { error: error.message };
+  }
+};
+
+
 
