@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
-import { searchMovies, getPopularMovies, getTrendingMovies, getGenres, getTVShowsByGenre, getPopularTVShows, getDistinctWebSeries } from '../services/api';
+import { searchMovies, getPopularMovies, getTrendingMovies, getGenres, getTVShowsByGenre, getPopularTVShows, getDistinctWebSeries, searchMultipleTitles, getEnhancedSearchResults } from '../services/api';
+import { getAIRecommendations } from '../services/openai';
 import './WhatToWatch.css';
 
 const WhatToWatch = () => {
@@ -18,6 +19,7 @@ const WhatToWatch = () => {
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [moodHighlights, setMoodHighlights] = useState({});
 
   const exampleMoods = [
     "I'm with my cousins and want something fun and lighthearted",
@@ -153,11 +155,38 @@ const WhatToWatch = () => {
     };
   };
 
-  const getRecommendations = async (searchParams) => {
+  const getRecommendations = async (searchParams, useAI = true, userInput = '', isQuiz = false, quizAnswers = null) => {
     try {
       let results = [];
       
-      // Genre mapping for movies
+      if (useAI && (userInput || isQuiz)) {
+        // Use OpenAI for intelligent recommendations
+        const { titles, error } = await getAIRecommendations(userInput, isQuiz, quizAnswers);
+        
+        if (!error && titles.length > 0) {
+          // Get enhanced search results with mood-based highlights
+          const userMood = isQuiz ? quizAnswers.mood : userInput;
+          const aiResults = await getEnhancedSearchResults(titles, userMood);
+          
+          if (aiResults.length > 0) {
+            // Store mood highlights
+            const highlights = {};
+            aiResults.forEach(movie => {
+              if (movie.mood_highlight) {
+                highlights[movie.id] = movie.mood_highlight;
+              }
+            });
+            setMoodHighlights(highlights);
+            
+            return aiResults.slice(0, 12);
+          }
+        }
+        
+        // If AI fails, fall back to traditional method
+        console.log('AI recommendations failed, falling back to traditional method');
+      }
+      
+      // Traditional recommendation logic (fallback)
       const movieGenreMap = {
         'comedy': '35',
         'action': '28',
@@ -168,7 +197,6 @@ const WhatToWatch = () => {
         'documentary': '99'
       };
 
-      // Genre mapping for TV shows (slightly different IDs)
       const tvGenreMap = {
         'comedy': '35',
         'action': '10759',
@@ -183,15 +211,12 @@ const WhatToWatch = () => {
         const movieGenreId = movieGenreMap[searchParams.genre];
         const tvGenreId = tvGenreMap[searchParams.genre];
         
-        // Fetch different content types based on user preference
         if (searchParams.type === 'series') {
-          // Fetch TV shows and web series
           const [tvShows, webSeries] = await Promise.all([
             tvGenreId ? getTVShowsByGenre(tvGenreId, 1) : getPopularTVShows(1),
             getDistinctWebSeries(1)
           ]);
           
-          // Transform TV shows
           const transformedTVShows = (tvShows.results || []).slice(0, 6).map(show => ({
             ...show,
             title: show.name,
@@ -199,7 +224,6 @@ const WhatToWatch = () => {
             media_type: 'tv'
           }));
           
-          // Transform web series
           const transformedWebSeries = (webSeries.results || []).slice(0, 6).map(series => ({
             ...series,
             title: series.name,
@@ -209,7 +233,6 @@ const WhatToWatch = () => {
           
           results = [...transformedTVShows, ...transformedWebSeries];
         } else {
-          // Fetch movies - fix the API call
           if (movieGenreId) {
             const movieResponse = await getPopularMovies(1, movieGenreId);
             results = (movieResponse.results || []).slice(0, 8).map(movie => ({
@@ -218,7 +241,6 @@ const WhatToWatch = () => {
             }));
           }
           
-          // Also include some TV content for variety
           const tvResponse = await getPopularTVShows(1);
           const transformedTV = (tvResponse.results || []).slice(0, 4).map(show => ({
             ...show,
@@ -231,7 +253,6 @@ const WhatToWatch = () => {
         }
       }
       
-      // Fallback: get mixed content if no specific genre
       if (results.length === 0) {
         const [movies, tvShows, webSeries] = await Promise.all([
           getTrendingMovies(),
@@ -239,7 +260,6 @@ const WhatToWatch = () => {
           getDistinctWebSeries(1)
         ]);
         
-        // Mix different content types
         const transformedMovies = (movies.results || []).slice(0, 4).map(movie => ({
           ...movie,
           media_type: 'movie'
@@ -262,7 +282,6 @@ const WhatToWatch = () => {
         results = [...transformedMovies, ...transformedTVShows, ...transformedWebSeries];
       }
       
-      // Shuffle results for variety
       return results.sort(() => Math.random() - 0.5).slice(0, 12);
     } catch (error) {
       console.error('Error getting recommendations:', error);
@@ -284,11 +303,12 @@ const WhatToWatch = () => {
     
     try {
       const analysis = analyzeMood(moodInput);
-      const results = await getRecommendations(analysis);
+      
+      // Use AI-powered recommendations with the user input
+      const results = await getRecommendations(analysis, true, moodInput, false, null);
       
       setRecommendations(results);
       
-      // Enhanced analysis result message
       let contentTypeText = 'content';
       if (analysis.type === 'series') {
         contentTypeText = 'TV shows and web series';
@@ -299,7 +319,7 @@ const WhatToWatch = () => {
       }
       
       setAnalysisResult(
-        `Based on your mood, I found some great ${analysis.genre || 'popular'} ${contentTypeText} for you!`
+        `Based on your mood, I found some great ${analysis.genre || 'personalized'} ${contentTypeText} recommendations for you!`
       );
     } catch (error) {
       setError('Failed to get recommendations. Please try again.');
@@ -337,9 +357,10 @@ const WhatToWatch = () => {
     setLoading(true);
     
     try {
-      // Generate recommendations based on quiz answers
       const searchParams = mapQuizAnswersToSearch(answers);
-      const results = await getRecommendations(searchParams);
+      
+      // Use AI-powered recommendations with quiz answers
+      const results = await getRecommendations(searchParams, true, '', true, answers);
       
       setRecommendations(results);
       setHasSearched(true);
@@ -569,7 +590,28 @@ const WhatToWatch = () => {
                 {recommendations.length > 0 ? (
                   <div className="recommendations-grid">
                     {recommendations.map((movie) => (
-                      <MovieCard key={movie.id} movie={movie} />
+                      <div key={movie.id} className="recommendation-item">
+                        <MovieCard movie={movie} />
+                        {moodHighlights[movie.id] && (
+                          <div className="mood-highlight">
+                            <div className="highlight-badge">
+                              <svg viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                              </svg>
+                              Perfect Match
+                            </div>
+                            <p className="highlight-text">{moodHighlights[movie.id]}</p>
+                          </div>
+                        )}
+                        {movie.is_top_match && (
+                          <div className="top-match-badge">
+                            <svg viewBox="0 0 24 24">
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                            Top Pick
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 ) : (

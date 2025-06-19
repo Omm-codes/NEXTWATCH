@@ -1106,6 +1106,120 @@
   fill: currentColor;
 }
 
+/* AI Enhanced Description Styles */
+.ai-description-container {
+  margin-bottom: 25px;
+}
+
+.ai-description {
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(255, 193, 7, 0.05));
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #e50914, #ffc107);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ai-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.toggle-description {
+  background: none;
+  border: none;
+  color: #e50914;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.toggle-description:hover {
+  color: #f40612;
+}
+
+.original-text {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #b3b3b3;
+  font-size: 1rem;
+}
+
+/* Review Summary Styles */
+.review-summary {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(76, 175, 80, 0.05));
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.summary-header h4 {
+  color: #2196f3;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.summary-icon {
+  width: 20px;
+  height: 20px;
+  fill: #2196f3;
+}
+
+.summary-text {
+  color: #e5e5e5;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.summary-loading {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 25px;
+  color: #b3b3b3;
+}
+
+.summary-loading .loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(33, 150, 243, 0.3);
+  border-top: 2px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .streaming-section {

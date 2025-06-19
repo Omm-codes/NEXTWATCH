@@ -323,4 +323,155 @@ export const getTVReviews = async (tvId, page = 1) => {
   }
 };
 
+// Add function to search for multiple titles
+export const searchMultipleTitles = async (titles) => {
+  try {
+    const searchPromises = titles.map(async (title) => {
+      try {
+        // Try multi-search first (searches movies, TV shows, and people)
+        const multiResults = await searchMulti(title, 1);
+        
+        // Filter out people and get only movies/TV shows
+        const mediaResults = multiResults.results.filter(
+          item => item.media_type === 'movie' || item.media_type === 'tv'
+        );
+        
+        if (mediaResults.length > 0) {
+          return mediaResults[0]; // Return the best match
+        }
+        
+        // If no results from multi-search, try movie search
+        const movieResults = await searchMovies(title, 1);
+        if (movieResults.results.length > 0) {
+          return { ...movieResults.results[0], media_type: 'movie' };
+        }
+        
+        // If no movie results, try TV search
+        const tvResults = await searchTVShows(title, 1);
+        if (tvResults.results.length > 0) {
+          return { 
+            ...tvResults.results[0], 
+            media_type: 'tv',
+            title: tvResults.results[0].name,
+            release_date: tvResults.results[0].first_air_date
+          };
+        }
+        
+        return null;
+      } catch (error) {
+        console.error(`Error searching for "${title}":`, error);
+        return null;
+      }
+    });
+    
+    const results = await Promise.all(searchPromises);
+    
+    // Filter out null results and add media_type if missing
+    return results
+      .filter(result => result !== null)
+      .map(result => ({
+        ...result,
+        title: result.title || result.name,
+        release_date: result.release_date || result.first_air_date,
+        media_type: result.media_type || 'movie'
+      }));
+  } catch (error) {
+    console.error('Error searching multiple titles:', error);
+    return [];
+  }
+};
+
+// Add function to get enhanced content with AI descriptions
+export const getEnhancedContentDetails = async (id, mediaType = 'movie', userPreferences = null) => {
+  try {
+    let contentData;
+    
+    if (mediaType === 'tv') {
+      contentData = await getTVShowDetails(id);
+      contentData = {
+        ...contentData,
+        title: contentData.name,
+        release_date: contentData.first_air_date,
+        media_type: 'tv'
+      };
+    } else {
+      contentData = await getMovieDetails(id);
+      contentData = {
+        ...contentData,
+        media_type: 'movie'
+      };
+    }
+
+    // Import AI functions dynamically to avoid circular dependencies
+    const { generateSmartDescription } = await import('./openai');
+    
+    // Generate smart description
+    const { description: aiDescription, error } = await generateSmartDescription(contentData, userPreferences);
+    
+    if (!error && aiDescription && aiDescription !== contentData.overview) {
+      contentData.ai_description = aiDescription;
+      contentData.has_ai_description = true;
+    }
+
+    return contentData;
+  } catch (error) {
+    console.error('Error getting enhanced content details:', error);
+    // Return basic details if AI enhancement fails
+    if (mediaType === 'tv') {
+      const data = await getTVShowDetails(id);
+      return {
+        ...data,
+        title: data.name,
+        release_date: data.first_air_date,
+        media_type: 'tv'
+      };
+    } else {
+      const data = await getMovieDetails(id);
+      return {
+        ...data,
+        media_type: 'movie'
+      };
+    }
+  }
+};
+
+// Add function to get enhanced search results with AI highlights
+export const getEnhancedSearchResults = async (titles, userMood = null) => {
+  try {
+    const searchResults = await searchMultipleTitles(titles);
+    
+    if (userMood && searchResults.length > 0) {
+      const { generateMoodBasedHighlight } = await import('./openai');
+      
+      // Add mood-based highlights to top 3 results
+      const enhancedResults = await Promise.all(
+        searchResults.slice(0, 3).map(async (movie, index) => {
+          try {
+            const { highlight } = await generateMoodBasedHighlight(movie, userMood);
+            return {
+              ...movie,
+              mood_highlight: highlight,
+              is_top_match: index === 0
+            };
+          } catch (error) {
+            console.error('Error generating highlight:', error);
+            return movie;
+          }
+        })
+      );
+      
+      // Combine enhanced results with remaining results
+      return [
+        ...enhancedResults,
+        ...searchResults.slice(3)
+      ];
+    }
+    
+    return searchResults;
+  } catch (error) {
+    console.error('Error getting enhanced search results:', error);
+    return await searchMultipleTitles(titles);
+  }
+};
+
 export default api;
