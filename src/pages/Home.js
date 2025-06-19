@@ -7,7 +7,7 @@ import {
   getPopularMovies, 
   getUpcomingMovies,
   getPopularTVShows,
-  getPopularWebSeries,
+  getDistinctWebSeries,
   searchMovies
 } from '../services/api';
 import './Home.css';
@@ -30,7 +30,7 @@ const Home = () => {
         const [trending, popular, webSeriesData, tvShows, upcoming] = await Promise.all([
           getTrendingMovies(),
           getPopularMovies(1),
-          getPopularWebSeries(1),
+          getDistinctWebSeries(1), // Use distinct web series function
           getPopularTVShows(1),
           getUpcomingMovies(1)
         ]);
@@ -321,11 +321,16 @@ const Home = () => {
                 </span>
               </div>
               
-              <h1 className="hero-title">{currentHeroMovie.title}</h1>
+              <h1 className="hero-title">
+                {currentHeroMovie.title}
+                <span className="release-year">
+                  ({currentHeroMovie.release_date ? new Date(currentHeroMovie.release_date).getFullYear() : 'N/A'})
+                </span>
+              </h1>
               
               <p className="hero-overview">
-                {currentHeroMovie.overview?.length > 300 
-                  ? currentHeroMovie.overview.substring(0, 300) + '...'
+                {currentHeroMovie.overview?.length > 200 
+                  ? currentHeroMovie.overview.substring(0, 200) + '...'
                   : currentHeroMovie.overview}
               </p>
               
@@ -354,6 +359,7 @@ const Home = () => {
                 src={`https://image.tmdb.org/t/p/w500${currentHeroMovie.poster_path}`}
                 alt={currentHeroMovie.title}
                 className="hero-poster-img"
+                loading="lazy"
               />
             </div>
           </div>

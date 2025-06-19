@@ -72,11 +72,19 @@ const Search = () => {
           // Transform mixed results
           data.results = data.results
             .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
-            .map(item => ({
-              ...item,
-              title: item.title || item.name,
-              release_date: item.release_date || item.first_air_date
-            }));
+            .map(item => {
+              // Determine if TV show should be classified as web series
+              const isWebSeries = item.media_type === 'tv' && 
+                item.first_air_date >= '2015-01-01' && 
+                item.vote_count >= 10;
+              
+              return {
+                ...item,
+                title: item.title || item.name,
+                release_date: item.release_date || item.first_air_date,
+                media_type: isWebSeries ? 'webseries' : item.media_type
+              };
+            });
           break;
       }
       

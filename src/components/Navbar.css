@@ -941,7 +941,7 @@
   transform: scale(1.1);
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive - Simplified */
 @media (max-width: 900px) {
   .navbar-container {
     padding: 0 1.5rem;
@@ -960,6 +960,9 @@
   .navbar-toggler {
     display: flex;
     order: 3;
+    width: 28px;
+    height: 20px;
+    margin-left: 16px;
   }
 
   .logo-image {
@@ -976,7 +979,7 @@
     order: 2;
   }
 
-  /* Enhanced Mobile Search */
+  /* Enhanced Mobile Search - Simplified */
   .search-form {
     min-width: 250px;
     height: 44px;
@@ -984,369 +987,18 @@
 
   .search-form input {
     padding: 12px 16px;
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-
-  .search-suggestions {
-    min-width: 300px;
-    max-width: calc(100vw - 2rem);
-    right: -1rem;
-  }
-
-  .suggestion-item {
-    padding: 16px 18px;
-    min-height: 48px; /* Touch-friendly target size */
-  }
-
-  .suggestion-poster {
-    width: 40px;
-    height: 60px;
-  }
-
-  /* Enhanced Mobile User Menu */
-  .user-greeting {
-    display: none;
-  }
-
-  .user-avatar {
-    padding: 8px;
-    min-height: 48px;
-    min-width: 48px;
-    gap: 8px;
-  }
-
-  .avatar-circle {
-    width: 32px;
-    height: 32px;
-    border-width: 1px;
-  }
-
-  .avatar-circle span {
-    font-size: 14px;
-  }
-
-  .avatar-status {
-    width: 8px;
-    height: 8px;
-    border-width: 1px;
-  }
-
-  .user-dropdown {
-    min-width: 300px;
-    max-width: calc(100vw - 2rem);
-    right: -1rem;
-  }
-
-  .user-info {
-    padding: 20px;
-    gap: 16px;
-  }
-
-  .user-avatar-large {
-    width: 56px;
-    height: 56px;
-    border-width: 2px;
-  }
-
-  .user-avatar-large span {
-    font-size: 20px;
-  }
-
-  .user-status-indicator {
-    width: 12px;
-    height: 12px;
-    border-width: 2px;
-  }
-
-  .dropdown-item {
-    padding: 16px 20px;
-    gap: 16px;
-    min-height: 56px; /* Touch-friendly */
-  }
-
-  .dropdown-item-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .dropdown-item-icon svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  /* Enhanced Auth Links */
-  .auth-links {
-    gap: 0.5rem;
-  }
-
-  .auth-btn {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
-    min-height: 32px;
-  }
-
-  .auth-btn-icon {
-    width: 14px;
-    height: 14px;
-  }
-
-  /* Mobile Search Adjustments */
-  .search-form {
-    min-width: 220px;
-    height: 42px;
-  }
-
-  .search-toggle {
-    padding: 12px;
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  .search-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .search-suggestions {
-    min-width: 280px;
-    right: -0.5rem;
-  }
-
-  .suggestion-item {
-    padding: 14px 16px;
-  }
-
-  .suggestion-poster {
-    width: 36px;
-    height: 54px;
-    margin-right: 12px;
-  }
-
-  .suggestion-title {
-    font-size: 14px;
-  }
-
-  .suggestion-year {
-    font-size: 12px;
-  }
-
-  /* Mobile User Menu */
-  .avatar-circle {
-    width: 28px;
-    height: 28px;
-  }
-
-  .avatar-circle span {
-    font-size: 12px;
-  }
-
-  .user-dropdown {
-    min-width: 280px;
-  }
-
-  .user-avatar-large {
-    width: 48px;
-    height: 48px;
-  }
-
-  .user-avatar-large span {
-    font-size: 18px;
-  }
-
-  .user-name {
-    font-size: 15px;
-  }
-
-  .user-email {
-    font-size: 12px;
-  }
-
-  .stat-item {
-    font-size: 11px;
-  }
-
-  .stat-item svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .dropdown-item {
-    padding: 14px 16px;
-    min-height: 52px;
-  }
-
-  .dropdown-item-title {
-    font-size: 13px;
-  }
-
-  .dropdown-item-subtitle {
-    font-size: 11px;
-  }
-
-  /* Auth Links */
-  .auth-links {
-    gap: 0.5rem;
-  }
-
-  .signup-btn,
-  .login-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    min-height: 40px;
-    border-radius: 6px;
-  }
-}
-
-@media (max-width: 768px) {
-  .navbar-container {
-    padding: 0 1rem;
-    height: 60px;
-  }
-
-  .logo-image {
-    height: 28px;
-  }
-
-  .mobile-menu {
-    top: 60px;
-    height: calc(100vh - 60px);
-  }
-
-  .navbar-right {
-    gap: 0.75rem;
-  }
-
-  /* Auth Links Adjustments */
-  .auth-links {
-    gap: 0.4rem;
-  }
-
-  .auth-btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
-    min-height: 30px;
-    border-radius: 4px;
-  }
-
-  .auth-btn-icon {
-    width: 12px;
-    height: 12px;
-  }
-
-  /* Mobile Search Adjustments */
-  .search-form {
-    min-width: 220px;
-    height: 42px;
-  }
-
-  .search-toggle {
-    padding: 12px;
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  .search-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .search-suggestions {
-    min-width: 280px;
-    right: -0.5rem;
-  }
-
-  .suggestion-item {
-    padding: 14px 16px;
-  }
-
-  .suggestion-poster {
-    width: 36px;
-    height: 54px;
-    margin-right: 12px;
-  }
-
-  .suggestion-title {
-    font-size: 14px;
-  }
-
-  .suggestion-year {
-    font-size: 12px;
-  }
-
-  /* Mobile User Menu */
-  .avatar-circle {
-    width: 28px;
-    height: 28px;
-  }
-
-  .avatar-circle span {
-    font-size: 12px;
-  }
-
-  .user-dropdown {
-    min-width: 280px;
-  }
-
-  .user-avatar-large {
-    width: 48px;
-    height: 48px;
-  }
-
-  .user-avatar-large span {
-    font-size: 18px;
-  }
-
-  .user-name {
-    font-size: 15px;
-  }
-
-  .user-email {
-    font-size: 12px;
-  }
-
-  .stat-item {
-    font-size: 11px;
-  }
-
-  .stat-item svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .dropdown-item {
-    padding: 14px 16px;
-    min-height: 52px;
-  }
-
-  .dropdown-item-title {
-    font-size: 13px;
-  }
-
-  .dropdown-item-subtitle {
-    font-size: 11px;
-  }
-
-  /* Auth Links */
-  .auth-links {
-    gap: 0.5rem;
-  }
-
-  .signup-btn,
-  .login-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    min-height: 36px;
+    font-size: 16px;
   }
 }
 
 @media (max-width: 600px) {
   .navbar-container {
     height: 56px;
-    padding: 0 1rem;
+    padding: 0 10px; /* Reduced padding for more space */
   }
 
   .logo-image {
-    height: 26px;
+    height: 24px; /* Slightly smaller logo */
   }
 
   .mobile-menu {
@@ -1355,129 +1007,281 @@
   }
 
   .navbar-right {
-    gap: 0.5rem;
+    gap: 4px; /* Reduced spacing between elements */
   }
 
-  /* Compact Mobile Search */
-  .search-form {
-    min-width: 200px;
-    height: 40px;
-  }
-
-  .search-form input {
-    padding: 10px 14px;
-    font-size: 16px;
-  }
-
+  /* Ultra-clean Mobile Search */
   .search-toggle {
     padding: 10px;
-    min-height: 40px;
-    min-width: 40px;
+    border-radius: 50%;
+    width: 48px;  /* Increased from 40px */
+    height: 48px; /* Increased from 40px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+  }
+
+  .search-toggle:active {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .search-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;  /* Increased from 20px */
+    height: 24px; /* Increased from 20px */
   }
 
+  /* Full-screen search experience */
+  .search-expanded .search-form {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 56px;
+    z-index: 1100;
+    border-radius: 0;
+    background: #121212;
+    border: none;
+    box-shadow: none;
+  }
+
+  .search-expanded .search-form input {
+    height: 100%;
+    padding: 0 56px 0 16px;
+  }
+
+  .search-expanded .search-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1101;
+  }
+
+  /* Clean search suggestions */
   .search-suggestions {
-    min-width: 260px;
-    max-width: calc(100vw - 1rem);
-    right: -0.5rem;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    max-height: calc(100vh - 56px);
   }
 
-  .suggestion-item {
-    padding: 12px 14px;
-    min-height: 48px;
-  }
-
-  .suggestion-poster {
-    width: 32px;
-    height: 48px;
-    margin-right: 10px;
-  }
-
-  .suggestion-title {
-    font-size: 13px;
-  }
-
-  .suggestion-year {
-    font-size: 11px;
-  }
-
-  /* Compact User Menu */
+  /* Simplified User Menu */
   .user-avatar {
-    padding: 6px;
-    min-height: 40px;
-    min-width: 40px;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    min-height: auto;
+    min-width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
   }
 
   .avatar-circle {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
+    border-width: 1px;
   }
 
-  .avatar-circle span {
-    font-size: 10px;
-  }
-
+  /* Clean fullscreen dropdown */
   .user-dropdown {
-    min-width: 260px;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
   }
 
-  .user-info {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .user-avatar-large {
+  /* Simplified navbar toggle */
+  .navbar-toggler {
     width: 40px;
     height: 40px;
+    padding: 0;
+    margin-left: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border-radius: 50%;
   }
 
-  .user-avatar-large span {
-    font-size: 16px;
+  .navbar-toggler span {
+    position: absolute;
+    width: 20px;
+    height: 2px;
   }
 
-  .user-name {
-    font-size: 14px;
+  .navbar-toggler span:nth-child(1) {
+    transform: translateY(-6px);
   }
 
-  .user-email {
-    font-size: 11px;
+  .navbar-toggler span:nth-child(3) {
+    transform: translateY(6px);
   }
 
-  .dropdown-item {
-    padding: 12px 14px;
-    min-height: 48px;
-    gap: 12px;
+  .navbar-toggler.active span:nth-child(1) {
+    transform: rotate(45deg);
   }
 
-  .dropdown-item-icon {
-    width: 18px;
-    height: 18px;
+  .navbar-toggler.active span:nth-child(2) {
+    opacity: 0;
   }
 
-  .dropdown-item-icon svg {
-    width: 12px;
-    height: 12px;
+  .navbar-toggler.active span:nth-child(3) {
+    transform: rotate(-45deg);
   }
 
-  /* Compact Auth Links */
+  /* Simple Material Design style buttons */
   .auth-links {
-    gap: 0.3rem;
+    gap: 8px;
   }
 
   .auth-btn {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.7rem;
-    min-height: 28px;
-    gap: 0.3rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+    min-height: 36px;
+    border-radius: 4px;
+    font-weight: 500;
+    box-shadow: none;
   }
+}
 
-  .auth-btn-icon {
-    width: 11px;
-    height: 11px;
+/* Improve touch interaction with minimal visual feedback */
+@media (max-width: 600px) {
+  .mobile-menu-content a:active,
+  .auth-btn:active,
+  .search-toggle:active,
+  .user-avatar:active,
+  .navbar-toggler:active {
+    background-color: rgba(255, 255, 255, 0.08);
+    background-image: none;
+  }
+  
+  /* Simplified animations */
+  @keyframes slideDownFade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideDownScale {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* Remove flashy effects */
+  .search-toggle::before,
+  .user-avatar::before,
+  .dropdown-item::before,
+  .auth-btn::before {
+    display: none;
+  }
+}
+
+/* Android specific fixes */
+@media screen and (max-width: 600px) {
+  .mobile-menu {
+    background: #121212;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+  
+  .mobile-menu-content a {
+    font-weight: 500;
+  }
+  
+  /* Material Design ripple effect on touch */
+  .mobile-menu-content a:active,
+  .auth-btn:active,
+  .search-toggle:active,
+  .user-avatar:active,
+  .navbar-toggler:active {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 1%, transparent 1%);
+    background-position: center;
+    background-size: 15000%;
+  }
+  
+  .mobile-menu-content a,
+  .auth-btn,
+  .search-toggle,
+  .user-avatar,
+  .navbar-toggler {
+    transition: background 0.8s;
+  }
+  
+  .mobile-menu-content a:active,
+  .auth-btn:active,
+  .search-toggle:active,
+  .user-avatar:active,
+  .navbar-toggler:active {
+    background-size: 100%;
+    transition: background 0s;
+  }
+  
+  /* Improve animation performance */
+  .navbar-toggler span,
+  .search-form,
+  .user-dropdown,
+  .mobile-menu {
+    will-change: transform, opacity;
+  }
+  
+  /* Fix acceleration issues */
+  .search-form.visible,
+  .user-dropdown,
+  .mobile-menu {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Make animations smoother on Android */
+@media (max-width: 600px) {
+  @keyframes slideDownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideDownScale {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 

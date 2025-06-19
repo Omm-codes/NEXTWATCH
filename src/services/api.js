@@ -205,6 +205,28 @@ export const getTopRatedEnhancedWebSeries = (page = 1) => {
   });
 };
 
+// Add the missing getDistinctWebSeries function
+export const getDistinctWebSeries = (page = 1) => {
+  return getApiData('/discover/tv', {
+    with_genres: '18,80,9648,10759', // Drama, Crime, Mystery, Action & Adventure
+    sort_by: 'popularity.desc',
+    'vote_count.gte': 50,
+    'first_air_date.gte': '2018-01-01', // Modern web series
+    page
+  });
+};
+
+// Add getCurrentWebSeries function
+export const getCurrentWebSeries = (page = 1) => {
+  return getApiData('/discover/tv', {
+    with_genres: '18,80,9648,10759,10765', // Popular web series genres
+    sort_by: 'first_air_date.desc',
+    'first_air_date.gte': '2020-01-01', // Recent web series
+    'vote_count.gte': 10,
+    page
+  });
+};
+
 // Enhanced recommendation function
 export const getRecommendationsByGenreAndYear = async (genres, startYear, endYear, mediaType = 'movie', page = 1) => {
   const endpoint = mediaType === 'movie' ? '/discover/movie' : '/discover/tv';

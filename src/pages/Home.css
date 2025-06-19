@@ -32,13 +32,13 @@
 /* Hero Section */
 .hero-section {
   position: relative;
-  height: 60vh; /* Reduced from 80vh or 100vh */
-  min-height: 400px; /* Reduced from 500px */
-  max-height: 500px; /* Added max height to prevent it from being too large */
+  height: 70vh; /* Increased for better mobile viewing */
+  min-height: 450px; /* Increased from 400px */
+  max-height: 600px; /* Increased from 500px */
   display: flex;
   align-items: center;
   overflow: hidden;
-  margin-bottom: 2rem; /* Reduced spacing */
+  margin-bottom: 2rem;
 }
 
 .hero-background {
@@ -78,7 +78,7 @@
   margin: 0 auto;
   padding: 0 2rem;
   width: 100%;
-  gap: 3rem; /* Reduced gap */
+  gap: 3rem;
 }
 
 .hero-info {
@@ -157,17 +157,17 @@
 
 .hero-navigation {
   position: absolute;
-  bottom: 1.5rem; /* Reduced from 2rem */
+  bottom: 2rem; /* Increased from 1.5rem */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem; /* Increased gap */
   z-index: 3;
 }
 
 .hero-dot {
-  width: 8px; /* Reduced size */
-  height: 8px;
+  width: 10px; /* Increased size */
+  height: 10px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.4);
   border: none;
@@ -177,7 +177,7 @@
 
 .hero-dot.active {
   background: #e50914;
-  transform: scale(1.2);
+  transform: scale(1.3); /* Increased scale */
 }
 
 .hero-dot:hover {
@@ -467,12 +467,12 @@
 /* Content Sections */
 .content-sections {
   background-color: #111111;
-  padding-bottom: 2rem;
+  padding-bottom: 3rem; /* Increased padding */
   min-height: 50vh;
 }
 
 .content-section {
-  padding: 3rem 0;
+  padding: 3rem 0; /* Maintained desktop padding */
 }
 
 .section-header {
@@ -508,11 +508,15 @@
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
+  font-size: 0.95rem; /* Added font size for consistency */
+  padding: 0.5rem; /* Added padding for better touch targets */
+  border-radius: 8px; /* Added border radius */
 }
 
 .view-all-link:hover {
   color: #f40612;
   transform: translateX(5px);
+  background: rgba(229, 9, 20, 0.1); /* Added hover background */
 }
 
 .view-all-link svg {
@@ -871,127 +875,219 @@
 
 @media (max-width: 900px) {
   .hero-section {
-    height: 50vh;
-    min-height: 350px;
-    max-height: 400px;
+    height: 75vh; /* Increased for mobile */
+    min-height: 500px; /* Increased significantly */
+    max-height: 650px; /* Increased max height */
+    align-items: flex-start; /* Changed to flex-start */
+    padding-top: 1rem; /* Added padding top */
   }
   
   .hero-content {
     flex-direction: column;
     text-align: center;
-    gap: 1.5rem;
-    padding: 1rem;
-    justify-content: center;
+    gap: 2rem; /* Increased gap */
+    padding: 2rem 1rem; /* Increased padding */
+    justify-content: flex-start; /* Changed to flex-start */
+    min-height: 100%; /* Ensure full height usage */
   }
   
   .hero-info {
     order: 2;
     max-width: 100%;
+    margin-top: 1rem; /* Added margin */
   }
   
   .hero-poster {
     order: 1;
-    width: 160px;
-    height: 240px;
+    width: 180px; /* Increased from 160px */
+    height: 270px; /* Increased from 240px */
     margin: 0 auto;
+    flex-shrink: 0;
   }
   
   .hero-title {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
+    font-size: 2.2rem; /* Increased from 2rem */
+    margin-bottom: 1rem; /* Increased margin */
+    line-height: 1.1;
   }
   
   .hero-overview {
-    font-size: 0.9rem;
-    margin-bottom: 1.25rem;
+    font-size: 1rem; /* Increased from 0.9rem */
+    margin-bottom: 1.5rem; /* Increased margin */
+    line-height: 1.6;
+    max-width: 90%; /* Added max-width */
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .hero-badges {
     justify-content: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem; /* Increased margin */
+    gap: 1rem; /* Increased gap */
+  }
+  
+  .badge {
+    padding: 0.5rem 1rem; /* Increased padding */
+    font-size: 0.85rem; /* Increased font size */
   }
   
   .hero-actions {
     justify-content: center;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 1rem; /* Increased gap */
+    width: 100%;
+    max-width: 400px; /* Added max-width */
+    margin: 0 auto;
   }
   
   .hero-navigation {
-    bottom: 1rem;
+    bottom: 1.5rem; /* Increased from 1rem */
+    gap: 1rem; /* Increased gap */
   }
   
-  .search-content h2 {
-    font-size: 1.5rem;
+  .hero-dot {
+    width: 12px; /* Increased size */
+    height: 12px;
   }
   
-  .quick-links-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-  }
-  
-  .quick-link-card {
-    padding: 1rem;
-  }
-  
-  .quick-link-icon {
-    font-size: 2rem;
+  .hero-dot.active {
+    transform: scale(1.4); /* Increased scale */
   }
 }
 
 @media (max-width: 600px) {
   .hero-section {
-    height: 45vh;
-    min-height: 300px;
-    max-height: 350px;
+    height: 80vh; /* Further increased */
+    min-height: 550px; /* Further increased */
+    max-height: 700px; /* Increased max height */
     margin-bottom: 1.5rem;
   }
   
   .hero-content {
-    gap: 1rem;
-    padding: 0.75rem;
+    gap: 1.5rem; /* Adjusted gap */
+    padding: 1.5rem 1rem; /* Adjusted padding */
   }
   
   .hero-poster {
-    width: 120px;
-    height: 180px;
+    width: 160px; /* Increased from 120px */
+    height: 240px; /* Increased from 180px */
   }
   
   .hero-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem; /* Increased from 1.5rem */
+    margin-bottom: 1rem;
+    line-height: 1.2;
   }
   
   .hero-overview {
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
+    font-size: 0.95rem; /* Increased from 0.85rem */
+    margin-bottom: 1.25rem; /* Increased margin */
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4; /* Increased from 3 */
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.5;
   }
   
   .hero-badges {
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 0.75rem; /* Increased gap */
+    margin-bottom: 1rem; /* Increased margin */
+    flex-wrap: wrap;
   }
   
   .badge {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem; /* Increased padding */
+    font-size: 0.8rem; /* Increased font size */
   }
   
   .hero-actions {
     flex-direction: column;
     width: 100%;
-    gap: 0.5rem;
+    gap: 0.75rem; /* Increased gap */
+    max-width: 320px; /* Increased max-width */
   }
   
   .btn-large {
     width: 100%;
     justify-content: center;
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
+    padding: 1rem 1.5rem; /* Increased padding */
+    font-size: 1rem; /* Increased font size */
+    min-height: 48px; /* Added min-height for touch targets */
+  }
+  
+  .btn-icon {
+    width: 18px; /* Increased from 16px */
+    height: 18px;
+  }
+  
+  .hero-navigation {
+    bottom: 1rem;
+    gap: 0.75rem;
+  }
+  
+  .hero-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    height: 85vh; /* Further increased for very small screens */
+    min-height: 600px; /* Further increased */
+    max-height: 750px;
+  }
+  
+  .hero-content {
+    gap: 1.25rem;
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .hero-poster {
+    width: 140px; /* Increased from 100px */
+    height: 210px; /* Increased from 150px */
+  }
+  
+  .hero-title {
+    font-size: 1.6rem; /* Increased from 1.3rem */
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  
+  .release-year {
+    display: block;
+    margin-top: 0.5rem; /* Increased margin */
+    font-size: 1rem; /* Increased from 0.9rem */
+  }
+  
+  .hero-overview {
+    font-size: 0.9rem; /* Increased from 0.8rem */
+    -webkit-line-clamp: 3;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  
+  .hero-badges {
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .badge {
+    padding: 0.35rem 0.7rem; /* Increased padding */
+    font-size: 0.75rem; /* Increased font size */
+  }
+  
+  .hero-actions {
+    gap: 0.75rem; /* Increased gap */
+    margin-top: 1rem; /* Added margin */
+  }
+  
+  .btn-large {
+    padding: 0.875rem 1.25rem; /* Increased padding */
+    font-size: 0.95rem; /* Increased font size */
+    max-width: 300px; /* Increased max-width */
+    min-height: 46px; /* Increased min-height */
   }
   
   .btn-icon {
@@ -1001,168 +1097,60 @@
   
   .hero-navigation {
     bottom: 0.75rem;
-  }
-  
-  .hero-dot {
-    width: 6px;
-    height: 6px;
-  }
-  
-  .search-section {
-    padding: 1.5rem 0;
-  }
-  
-  .search-content h2 {
-    font-size: 1.3rem;
-  }
-  
-  .search-content p {
-    font-size: 0.8rem;
-  }
-  
-  .quick-links-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-  
-  .quick-link-card {
-    padding: 0.8rem;
-  }
-  
-  .quick-link-card h3 {
-    font-size: 0.9rem;
-  }
-  
-  .quick-link-card p {
-    font-size: 0.75rem;
-  }
-  
-  .quick-link-icon {
-    font-size: 1.8rem;
-    margin-bottom: 0.4rem;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .section-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .movies-grid-horizontal .movie-card-wrapper {
-    flex: 0 0 150px;
-  }
-  
-  .filter-header h2 {
-    font-size: 1.8rem;
-  }
-  
-  .content-filter-tabs {
-    flex-direction: column;
-    align-items: center;
     gap: 0.5rem;
   }
   
-  .filter-tab {
-    width: 100%;
-    max-width: 250px;
-    justify-content: center;
-    padding: 0.75rem 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-section {
-    height: 40vh;
-    min-height: 280px;
-    max-height: 320px;
-  }
-  
-  .hero-content {
-    gap: 0.75rem;
-    padding: 0.5rem;
-  }
-  
-  .hero-poster {
-    width: 100px;
-    height: 150px;
-  }
-  
-  .hero-title {
-    font-size: 1.3rem;
-    line-height: 1.2;
-  }
-  
-  .hero-overview {
-    font-size: 0.8rem;
-    -webkit-line-clamp: 2;
-    margin-bottom: 0.75rem;
-  }
-  
-  .hero-badges {
-    gap: 0.25rem;
-  }
-  
-  .badge {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.65rem;
-  }
-  
-  .btn-large {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.85rem;
-  }
-  
-  .btn-icon {
-    width: 14px;
-    height: 14px;
-  }
-  
-  .hero-navigation {
-    bottom: 0.5rem;
-  }
-  
   .hero-dot {
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
   }
 }
 
 @media (max-width: 375px) {
   .hero-section {
-    height: 35vh;
-    min-height: 250px;
-    max-height: 280px;
+    height: 90vh; /* Maximum height for very small screens */
+    min-height: 650px; /* Ensure adequate space */
+    max-height: 800px;
+  }
+  
+  .hero-content {
+    gap: 1rem;
+    padding: 1rem 0.5rem;
   }
   
   .hero-poster {
-    width: 90px;
-    height: 135px;
+    width: 120px; /* Increased from 90px */
+    height: 180px; /* Increased from 135px */
   }
   
   .hero-title {
-    font-size: 1.2rem;
+    font-size: 1.4rem; /* Increased from 1.2rem */
+    margin-bottom: 0.75rem;
+  }
+  
+  .release-year {
+    font-size: 0.9rem; /* Increased from 0.8rem */
   }
   
   .hero-overview {
-    font-size: 0.75rem;
-    -webkit-line-clamp: 2;
+    font-size: 0.85rem; /* Increased from 0.75rem */
+    -webkit-line-clamp: 3;
+    margin-bottom: 1rem;
   }
   
   .btn-large {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
+    padding: 0.75rem 1rem; /* Increased padding */
+    font-size: 0.9rem; /* Increased font size */
+    min-height: 44px; /* Increased min-height */
   }
   
   .hero-actions {
-    gap: 0.4rem;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  
+  .hero-navigation {
+    bottom: 0.5rem;
   }
 }
 

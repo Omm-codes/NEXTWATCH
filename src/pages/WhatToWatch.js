@@ -37,8 +37,8 @@ const MoviePicker = () => {
       question: "What type of content do you prefer?",
       options: [
         { value: 'movie', label: 'Movies (2-3 hours)', emoji: '🎬' },
-        { value: 'tv', label: 'TV Shows (Multiple episodes)', emoji: '📺' },
-        { value: 'webseries', label: 'Web Series (Short episodes)', emoji: '💻' },
+        { value: 'tv', label: 'TV Shows (Network Television)', emoji: '📺' },
+        { value: 'webseries', label: 'Web Series (Streaming Originals)', emoji: '💻' },
         { value: 'any', label: "I'm open to anything!", emoji: '🎯' }
       ]
     },

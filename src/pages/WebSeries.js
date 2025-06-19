@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
 import { 
-  getPopularTVShows, 
-  getTopRatedTVShows, 
-  getOnTheAirTVShows,
+  getPopularEnhancedWebSeries,
+  getTopRatedEnhancedWebSeries, 
+  getCurrentWebSeries,
   getTVShowsByGenre,
   getTVGenres
 } from '../services/api';
@@ -26,7 +26,11 @@ const WebSeries = () => {
     const fetchGenres = async () => {
       try {
         const genresData = await getTVGenres();
-        setGenres(genresData.genres);
+        // Filter genres more relevant to web series
+        const webSeriesGenres = genresData.genres.filter(genre => 
+          [18, 80, 9648, 10759, 10765, 35, 10766, 99].includes(genre.id)
+        ); // Drama, Crime, Mystery, Action & Adventure, Sci-Fi & Fantasy, Comedy, Soap, Documentary
+        setGenres(webSeriesGenres);
       } catch (err) {
         console.error('Error fetching TV genres:', err);
       }
@@ -43,17 +47,21 @@ const WebSeries = () => {
         
         if (genreId) {
           data = await getTVShowsByGenre(genreId, currentPage);
+          // Filter results to focus on web series characteristics
+          data.results = data.results.filter(show => 
+            show.first_air_date >= '2015-01-01' && show.vote_count >= 10
+          );
         } else {
           switch (category) {
             case 'top_rated':
-              data = await getTopRatedTVShows(currentPage);
+              data = await getTopRatedEnhancedWebSeries(currentPage);
               break;
-            case 'on_the_air':
-              data = await getOnTheAirTVShows(currentPage);
+            case 'current':
+              data = await getCurrentWebSeries(currentPage);
               break;
             case 'popular':
             default:
-              data = await getPopularTVShows(currentPage);
+              data = await getPopularEnhancedWebSeries(currentPage);
               break;
           }
         }
@@ -123,7 +131,7 @@ const WebSeries = () => {
     switch (category) {
       case 'popular': return 'Popular Web Series';
       case 'top_rated': return 'Top Rated Web Series';
-      case 'on_the_air': return 'Currently Airing Web Series';
+      case 'current': return 'Latest Web Series';
       default: return 'Web Series';
     }
   };
@@ -161,10 +169,10 @@ const WebSeries = () => {
                 Popular
               </button>
               <button 
-                className={`category-tab ${!genreId && category === 'on_the_air' ? 'active' : ''}`}
-                onClick={() => handleCategoryChange('on_the_air')}
+                className={`category-tab ${!genreId && category === 'current' ? 'active' : ''}`}
+                onClick={() => handleCategoryChange('current')}
               >
-                Currently Airing
+                Latest
               </button>
               <button 
                 className={`category-tab ${!genreId && category === 'top_rated' ? 'active' : ''}`}
