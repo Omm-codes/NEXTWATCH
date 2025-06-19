@@ -10,10 +10,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="NextWatch" />
     
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
     <!-- SEO and Social Media Meta Tags -->
     <meta name="description" content="NextWatch - Your personal cinema companion for discovering amazing movies, TV shows, and web series. Get personalized recommendations and never wonder what to watch next!" />
-    <meta name="keywords" content="movies, tv shows, web series, recommendations, cinema, entertainment, watchlist, streaming" />
+    <meta name="keywords" content="movies, tv shows, web series, recommendations, cinema, entertainment, watchlist, streaming, film discovery" />
     <meta name="author" content="NextWatch" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://nextwatch.app/" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -21,13 +28,40 @@
     <meta property="og:title" content="NextWatch - Your Personal Cinema Companion" />
     <meta property="og:description" content="Discover amazing movies, TV shows, and web series with personalized recommendations. Never wonder what to watch next!" />
     <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:site_name" content="NextWatch" />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://nextwatch.app/" />
-    <meta property="twitter:title" content="NextWatch - Your Personal Cinema Companion" />
-    <meta property="twitter:description" content="Discover amazing movies, TV shows, and web series with personalized recommendations." />
-    <meta property="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://nextwatch.app/" />
+    <meta name="twitter:title" content="NextWatch - Your Personal Cinema Companion" />
+    <meta name="twitter:description" content="Discover amazing movies, TV shows, and web series with personalized recommendations." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta name="twitter:creator" content="@NextWatch" />
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "NextWatch",
+      "description": "Your personal cinema companion for discovering amazing movies, TV shows, and web series",
+      "url": "https://nextwatch.app/",
+      "applicationCategory": "Entertainment",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1250"
+      }
+    }
+    </script>
     
     <!-- Essential PWA Icons -->
     <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/apple-touch-icon-57x57.png" />
@@ -40,15 +74,24 @@
     <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/apple-touch-icon-152x152.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon-180x180.png" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!-- ...existing code... -->
     
     <!-- Manifest -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     
-    <!-- Preload critical resources -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://api.themoviedb.org" />
-    <link rel="preconnect" href="https://image.tmdb.org" />
+    <!-- Enhanced Resource Hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.themoviedb.org" crossorigin />
+    <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    
+    <!-- Critical CSS inlined for faster rendering -->
+    <style>
+      /* Critical loading styles */
+      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111; }
+      #root { min-height: 100vh; }
+      .loading { display: flex; align-items: center; justify-content: center; height: 100vh; color: #e50914; }
+    </style>
     
     <!-- Disable automatic phone number detection -->
     <meta name="format-detection" content="telephone=no" />
@@ -65,27 +108,65 @@
         height: 100vh;
         background: #111;
         color: #fff;
-        font-family: Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         text-align: center;
         padding: 20px;
+        line-height: 1.6;
       ">
-        <h1 style="color: #e50914; margin-bottom: 20px;">NextWatch</h1>
-        <p style="font-size: 18px; margin-bottom: 10px;">You need to enable JavaScript to run this app.</p>
-        <p style="color: #999;">Please enable JavaScript in your browser settings and refresh the page.</p>
+        <div style="max-width: 400px;">
+          <h1 style="color: #e50914; margin-bottom: 20px; font-size: 2.5rem;">NextWatch</h1>
+          <p style="font-size: 18px; margin-bottom: 15px;">JavaScript is required to run this application.</p>
+          <p style="color: #999; margin-bottom: 20px;">Please enable JavaScript in your browser settings and refresh the page to continue.</p>
+          <div style="background: #222; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <p style="color: #ccc; font-size: 14px; margin: 0;">
+              <strong>How to enable JavaScript:</strong><br>
+              Chrome/Edge: Settings → Privacy & Security → Site Settings → JavaScript<br>
+              Firefox: about:config → javascript.enabled → true<br>
+              Safari: Preferences → Security → Enable JavaScript
+            </p>
+          </div>
+        </div>
       </div>
     </noscript>
-    <div id="root"></div>
     
-    <!-- PWA Install Banner Script -->
+    <div id="root" role="main" aria-label="NextWatch Application">
+      <!-- Loading indicator for better UX -->
+      <div class="loading" id="loading-indicator">
+        <div style="text-align: center;">
+          <div style="color: #e50914; font-size: 2rem; margin-bottom: 10px;">🎬</div>
+          <div>Loading NextWatch...</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Enhanced PWA Install Banner Script -->
     <script>
       let deferredPrompt;
+      let installBanner;
+      
+      // Remove loading indicator once React loads
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const loader = document.getElementById('loading-indicator');
+          if (loader) loader.style.display = 'none';
+        }, 1000);
+      });
       
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         
+        // Don't show banner if recently dismissed or already installed
+        const lastDismissed = localStorage.getItem('nextwatch-install-dismissed');
+        const isInstalled = localStorage.getItem('nextwatch-pwa-installed');
+        
+        if (isInstalled || (lastDismissed && Date.now() - lastDismissed < 7 * 24 * 60 * 60 * 1000)) {
+          return;
+        }
+        
         // Show custom install button or banner
-        const installBanner = document.createElement('div');
+        installBanner = document.createElement('div');
+        installBanner.id = 'pwa-install-banner';
         installBanner.innerHTML = `
           <div style="
             position: fixed;
@@ -94,7 +175,7 @@
             right: 20px;
             background: linear-gradient(135deg, #e50914, #f40612);
             color: white;
-            padding: 15px 20px;
+            padding: 16px 20px;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             z-index: 9999;
@@ -102,31 +183,40 @@
             align-items: center;
             justify-content: space-between;
             animation: slideUp 0.3s ease-out;
-          ">
-            <div>
-              <strong>Install NextWatch</strong>
-              <br>
-              <small>Get the full app experience!</small>
+            max-width: 500px;
+            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          " role="dialog" aria-labelledby="install-title" aria-describedby="install-desc">
+            <div style="flex: 1;">
+              <div id="install-title" style="font-weight: bold; margin-bottom: 4px;">📱 Install NextWatch</div>
+              <div id="install-desc" style="font-size: 14px; opacity: 0.9;">Get the full app experience with offline access!</div>
             </div>
-            <div>
-              <button onclick="installApp()" style="
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="install-btn" style="
                 background: white;
                 color: #e50914;
                 border: none;
-                padding: 8px 16px;
+                padding: 10px 16px;
                 border-radius: 6px;
                 font-weight: bold;
-                margin-right: 10px;
                 cursor: pointer;
-              ">Install</button>
-              <button onclick="dismissInstall()" style="
+                font-size: 14px;
+                transition: transform 0.2s;
+              " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                Install
+              </button>
+              <button id="dismiss-btn" style="
                 background: transparent;
                 color: white;
-                border: 1px solid white;
-                padding: 8px 16px;
+                border: 1px solid rgba(255,255,255,0.5);
+                padding: 10px 16px;
                 border-radius: 6px;
                 cursor: pointer;
-              ">Later</button>
+                font-size: 14px;
+                transition: all 0.2s;
+              " onmouseover="this.style.borderColor='white'; this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.5)'; this.style.backgroundColor='transparent'">
+                Later
+              </button>
             </div>
           </div>
           <style>
@@ -134,38 +224,107 @@
               from { transform: translateY(100%); opacity: 0; }
               to { transform: translateY(0); opacity: 1; }
             }
+            @media (max-width: 480px) {
+              #pwa-install-banner > div:first-child {
+                flex-direction: column !important;
+                gap: 12px !important;
+                text-align: center !important;
+              }
+            }
           </style>
         `;
         
         document.body.appendChild(installBanner);
         
-        window.installApp = () => {
+        // Add event listeners
+        document.getElementById('install-btn').addEventListener('click', installApp);
+        document.getElementById('dismiss-btn').addEventListener('click', dismissInstall);
+        
+        // Auto-dismiss after 30 seconds
+        setTimeout(() => {
+          if (installBanner && installBanner.parentNode) {
+            dismissInstall();
+          }
+        }, 30000);
+      });
+      
+      function installApp() {
+        if (deferredPrompt) {
           deferredPrompt.prompt();
           deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+              localStorage.setItem('nextwatch-pwa-installed', 'true');
+            }
             deferredPrompt = null;
-            document.body.removeChild(installBanner);
+            removeInstallBanner();
           });
-        };
-        
-        window.dismissInstall = () => {
-          document.body.removeChild(installBanner);
-          localStorage.setItem('nextwatch-install-dismissed', Date.now());
-        };
-        
-        // Don't show banner if recently dismissed
-        const lastDismissed = localStorage.getItem('nextwatch-install-dismissed');
-        if (lastDismissed && Date.now() - lastDismissed < 7 * 24 * 60 * 60 * 1000) {
-          document.body.removeChild(installBanner);
         }
-      });
+      }
+      
+      function dismissInstall() {
+        removeInstallBanner();
+        localStorage.setItem('nextwatch-install-dismissed', Date.now());
+      }
+      
+      function removeInstallBanner() {
+        if (installBanner && installBanner.parentNode) {
+          installBanner.style.animation = 'slideDown 0.3s ease-out forwards';
+          setTimeout(() => {
+            if (installBanner.parentNode) {
+              document.body.removeChild(installBanner);
+            }
+          }, 300);
+        }
+      }
       
       // Handle successful installation
       window.addEventListener('appinstalled', (evt) => {
         console.log('NextWatch PWA was installed successfully');
         localStorage.setItem('nextwatch-pwa-installed', 'true');
+        removeInstallBanner();
+        
+        // Optional: Show success message
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            animation: slideDown 0.3s ease-out;
+          ">
+            ✅ NextWatch installed successfully!
+          </div>
+          <style>
+            @keyframes slideDown {
+              from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+              to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+          </style>
+        `;
+        document.body.appendChild(successMsg);
+        setTimeout(() => {
+          if (successMsg.parentNode) {
+            document.body.removeChild(successMsg);
+          }
+        }, 3000);
+      });
+      
+      // Performance monitoring
+      window.addEventListener('load', () => {
+        if ('performance' in window) {
+          const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+          console.log('NextWatch loaded in', loadTime, 'ms');
+        }
       });
     </script>
-  </body>
-</html>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
-import { getMovieDetails, getTVShowDetails, getMovieVideos, getTVShowVideos, API_IMAGE_URL, POSTER_SIZE, BACKDROP_SIZE } from '../services/api';
+import { getMovieDetails, getTVShowDetails, getMovieVideos, getTVShowVideos, getMovieProviders, getTVProviders, getMovieReviews, getTVReviews, API_IMAGE_URL, POSTER_SIZE, BACKDROP_SIZE } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import './MovieDetails.css';
 import defaultPoster from '../assets/default-movie.png';
@@ -23,6 +23,11 @@ const MovieDetails = () => {
   const [trailerLoading, setTrailerLoading] = useState(false);
   const [showFullOverview, setShowFullOverview] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [streamingProviders, setStreamingProviders] = useState(null);
+  const [providersLoading, setProvidersLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   // Determine if this is a TV show or movie based on the route
   const isTV = location.pathname.startsWith('/tv/');
@@ -50,6 +55,40 @@ const MovieDetails = () => {
         }
         
         setMovie(data);
+        
+        // Fetch streaming providers
+        setProvidersLoading(true);
+        try {
+          let providersData;
+          if (isTV) {
+            providersData = await getTVProviders(id);
+          } else {
+            providersData = await getMovieProviders(id);
+          }
+          setStreamingProviders(providersData);
+        } catch (providerError) {
+          console.error('Error fetching providers:', providerError);
+          setStreamingProviders(null);
+        } finally {
+          setProvidersLoading(false);
+        }
+
+        // Fetch reviews
+        setReviewsLoading(true);
+        try {
+          let reviewsData;
+          if (isTV) {
+            reviewsData = await getTVReviews(id);
+          } else {
+            reviewsData = await getMovieReviews(id);
+          }
+          setReviews(reviewsData.results || []);
+        } catch (reviewError) {
+          console.error('Error fetching reviews:', reviewError);
+          setReviews([]);
+        } finally {
+          setReviewsLoading(false);
+        }
         
         if (user) {
           // For authenticated users, check Firebase
@@ -247,6 +286,270 @@ const MovieDetails = () => {
     if (rating >= 7) return '#ff9800';
     if (rating >= 6) return '#2196f3';
     return '#f44336';
+  };
+
+  // Get streaming providers for user's region (India as default)
+  const getAvailableProviders = () => {
+    if (!streamingProviders?.results) return null;
+    
+    // Priority order: India first, then other English-speaking regions
+    const regions = ['IN', 'US', 'GB', 'CA', 'AU'];
+    let providers = null;
+    
+    for (const region of regions) {
+      if (streamingProviders.results[region]) {
+        providers = streamingProviders.results[region];
+        break;
+      }
+    }
+    
+    return providers;
+  };
+
+  const renderStreamingProviders = () => {
+    if (providersLoading) {
+      return (
+        <div className="streaming-section">
+          <h3>Available On</h3>
+          <div className="streaming-providers loading">
+            <div className="provider-loading">Loading streaming options...</div>
+          </div>
+        </div>
+      );
+    }
+
+    const providers = getAvailableProviders();
+    
+    if (!providers) {
+      return (
+        <div className="streaming-section">
+          <h3>Available On</h3>
+          <div className="streaming-providers">
+            <div className="no-providers">
+              <svg className="no-providers-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              <span>Streaming availability not found</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Combine all provider types
+    const allProviders = [
+      ...(providers.flatrate || []),
+      ...(providers.buy || []),
+      ...(providers.rent || [])
+    ];
+
+    // Remove duplicates based on provider_id
+    const uniqueProviders = allProviders.filter((provider, index, self) =>
+      index === self.findIndex(p => p.provider_id === provider.provider_id)
+    );
+
+    if (uniqueProviders.length === 0) {
+      return (
+        <div className="streaming-section">
+          <h3>Available On</h3>
+          <div className="streaming-providers">
+            <div className="no-providers">
+              <svg className="no-providers-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              <span>Not currently available on major platforms in India</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="streaming-section">
+        <h3>Available On</h3>
+        <div className="streaming-providers">
+          {uniqueProviders.map((provider) => (
+            <div key={provider.provider_id} className="provider-item">
+              <div className="provider-logo">
+                <img
+                  src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`}
+                  alt={provider.provider_name}
+                  loading="lazy"
+                />
+              </div>
+              <span className="provider-name">{provider.provider_name}</span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Show different availability types */}
+        <div className="provider-types">
+          {providers.flatrate && providers.flatrate.length > 0 && (
+            <div className="provider-type">
+              <span className="type-label stream">🎬 Stream</span>
+            </div>
+          )}
+          {providers.buy && providers.buy.length > 0 && (
+            <div className="provider-type">
+              <span className="type-label buy">💰 Buy</span>
+            </div>
+          )}
+          {providers.rent && providers.rent.length > 0 && (
+            <div className="provider-type">
+              <span className="type-label rent">📅 Rent</span>
+            </div>
+          )}
+        </div>
+        
+        <p className="providers-note">
+          Streaming availability in India and other regions. 
+          <a 
+            href={`https://www.themoviedb.org/${isTV ? 'tv' : 'movie'}/${id}/watch`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="providers-link"
+          >
+            View all regions
+          </a>
+        </p>
+      </div>
+    );
+  };
+
+  const formatReviewDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getReviewRating = (authorDetails) => {
+    return authorDetails?.rating || null;
+  };
+
+  const truncateReview = (content, wordLimit = 50) => {
+    const words = content.split(' ');
+    if (words.length <= wordLimit) return content;
+    return words.slice(0, wordLimit).join(' ') + '...';
+  };
+
+  const renderReviews = () => {
+    if (reviewsLoading) {
+      return (
+        <div className="reviews-section">
+          <h3 className="section-title">User Reviews</h3>
+          <div className="reviews-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading reviews...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (reviews.length === 0) {
+      return (
+        <div className="reviews-section">
+          <h3 className="section-title">User Reviews</h3>
+          <div className="no-reviews">
+            <svg className="no-reviews-icon" viewBox="0 0 24 24">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V9h2v2zm0-4h-2V5h2v2z"/>
+            </svg>
+            <p>No user reviews available yet</p>
+          </div>
+        </div>
+      );
+    }
+
+    const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
+
+    return (
+      <div className="reviews-section">
+        <div className="reviews-header">
+          <h3 className="section-title">User Reviews</h3>
+          <span className="reviews-count">({reviews.length} review{reviews.length !== 1 ? 's' : ''})</span>
+        </div>
+        
+        <div className="reviews-container">
+          {displayedReviews.map((review) => (
+            <div key={review.id} className="review-card">
+              <div className="review-header">
+                <div className="review-author">
+                  <div className="author-avatar">
+                    {review.author_details?.avatar_path ? (
+                      <img 
+                        src={review.author_details.avatar_path.startsWith('/https') 
+                          ? review.author_details.avatar_path.substring(1)
+                          : `https://image.tmdb.org/t/p/w45${review.author_details.avatar_path}`
+                        }
+                        alt={review.author}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="author-initial">
+                        {review.author.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="author-info">
+                    <h4 className="author-name">{review.author}</h4>
+                    <p className="review-date">{formatReviewDate(review.created_at)}</p>
+                  </div>
+                </div>
+                
+                {getReviewRating(review.author_details) && (
+                  <div className="review-rating">
+                    <svg className="star-icon" viewBox="0 0 24 24">
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                    </svg>
+                    <span className="rating-value">
+                      {getReviewRating(review.author_details)}/10
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="review-content">
+                <p>{truncateReview(review.content)}</p>
+                {review.content.split(' ').length > 50 && (
+                  <button 
+                    className="read-full-review"
+                    onClick={() => window.open(review.url, '_blank')}
+                  >
+                    Read full review on TMDB
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {reviews.length > 3 && (
+          <div className="reviews-actions">
+            <button 
+              className="show-more-reviews"
+              onClick={() => setShowAllReviews(!showAllReviews)}
+            >
+              {showAllReviews ? (
+                <>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+                  </svg>
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+                  </svg>
+                  Show All Reviews ({reviews.length})
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -450,6 +753,12 @@ const MovieDetails = () => {
 
       {/* Details Section with stagger animation */}
       <div className="details-section">
+        {/* Streaming Providers Section */}
+        {renderStreamingProviders()}
+
+        {/* Reviews Section */}
+        {renderReviews()}
+
         {/* Cast Section */}
         {movie.credits?.cast?.length > 0 && (
           <div className="cast-section animate-section" style={{ animationDelay: '0.2s' }}>

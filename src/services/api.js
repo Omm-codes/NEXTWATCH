@@ -269,4 +269,58 @@ export const getTVShowsByGenre = (genreId, page = 1) => {
   });
 };
 
+// Add streaming providers function
+export const getMovieProviders = async (movieId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}/watch/providers?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching movie providers:', error);
+    throw error;
+  }
+};
+
+export const getTVProviders = async (tvId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tv/${tvId}/watch/providers?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching TV providers:', error);
+    throw error;
+  }
+};
+
+// Add reviews API functions
+export const getMovieReviews = async (movieId, page = 1) => {
+  try {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}/reviews?api_key=${API_KEY}&page=${page}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching movie reviews:', error);
+    throw error;
+  }
+};
+
+export const getTVReviews = async (tvId, page = 1) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tv/${tvId}/reviews?api_key=${API_KEY}&page=${page}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching TV reviews:', error);
+    throw error;
+  }
+};
+
 export default api;
