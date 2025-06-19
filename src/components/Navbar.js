@@ -455,12 +455,12 @@ const Navbar = () => {
                     <Link to="/whattowatch" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
                       <div className="dropdown-item-icon">
                         <svg viewBox="0 0 24 24">
-                          <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3z"/>
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                         </svg>
                       </div>
                       <div className="dropdown-item-content">
                         <span className="dropdown-item-title">What to Watch</span>
-                        <span className="dropdown-item-subtitle">Get personalized recommendations</span>
+                        <span className="dropdown-item-subtitle">Get mood-based recommendations</span>
                       </div>
                     </Link>
                   </div>

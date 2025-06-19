@@ -1,334 +1,594 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
-import { 
-  getMoviesByGenre, 
-  getPopularMovies, 
-  getTopRatedMovies,
-  getPopularTVShows, 
-  getTopRatedTVShows,
-  getTVShowsByGenre,
-  getPopularWebSeries,
-  getTopRatedWebSeries
-} from '../services/api';
+import { searchMovies, getPopularMovies, getTrendingMovies, getGenres, getTVShowsByGenre, getPopularTVShows, getDistinctWebSeries } from '../services/api';
 import './WhatToWatch.css';
 
-const MoviePicker = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
+const WhatToWatch = () => {
+  const [moodInput, setMoodInput] = useState('');
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [quizComplete, setQuizComplete] = useState(false);
+  const [error, setError] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState('');
+  const [activeTab, setActiveTab] = useState('mood'); // 'mood' or 'quiz'
+  
+  // Quiz state
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
 
-  const questions = [
+  const exampleMoods = [
+    "I'm with my cousins and want something fun and lighthearted",
+    "Looking for a romantic movie to watch with my girlfriend",
+    "I want to binge-watch a thrilling series this weekend",
+    "Need something funny after a long day at work",
+    "Want to watch an action-packed movie with friends",
+    "Looking for a feel-good family movie",
+    "I'm in the mood for something scary and suspenseful",
+    "Want to learn something new through documentaries"
+  ];
+
+  const quizQuestions = [
     {
       id: 'mood',
-      question: "What's your mood today?",
+      question: 'How are you feeling right now?',
       options: [
-        { value: 'action', label: 'I want excitement and adrenaline!', emoji: '⚡' },
-        { value: 'comedy', label: 'I need a good laugh', emoji: '😄' },
-        { value: 'drama', label: 'Something deep and emotional', emoji: '🎭' },
-        { value: 'horror', label: 'I want to be scared!', emoji: '😱' },
-        { value: 'romance', label: 'Something romantic and sweet', emoji: '💕' }
+        { value: 'happy', label: 'Happy & Energetic' },
+        { value: 'relaxed', label: 'Calm & Relaxed' },
+        { value: 'adventurous', label: 'Adventurous' },
+        { value: 'romantic', label: 'Romantic' },
+        { value: 'thoughtful', label: 'Thoughtful' }
       ]
     },
     {
-      id: 'contentType',
-      question: "What type of content do you prefer?",
+      id: 'time',
+      question: 'How much time do you have?',
       options: [
-        { value: 'movie', label: 'Movies (2-3 hours)', emoji: '🎬' },
-        { value: 'tv', label: 'TV Shows (Network Television)', emoji: '📺' },
-        { value: 'webseries', label: 'Web Series (Streaming Originals)', emoji: '💻' },
-        { value: 'any', label: "I'm open to anything!", emoji: '🎯' }
+        { value: 'short', label: 'Less than 2 hours' },
+        { value: 'medium', label: '2-3 hours' },
+        { value: 'long', label: 'Whole evening (3+ hours)' },
+        { value: 'series', label: 'Multiple episodes/days' }
       ]
     },
     {
-      id: 'timeAvailable',
-      question: "How much time do you have?",
+      id: 'genre',
+      question: 'What genre appeals to you most?',
       options: [
-        { value: 'short', label: 'Under 30 minutes', emoji: '⏰' },
-        { value: 'medium', label: '1-2 hours', emoji: '🕐' },
-        { value: 'long', label: '2+ hours', emoji: '⏳' },
-        { value: 'binge', label: 'All day - let me binge!', emoji: '🛋️' }
+        { value: 'action', label: 'Action & Adventure' },
+        { value: 'comedy', label: 'Comedy' },
+        { value: 'drama', label: 'Drama' },
+        { value: 'thriller', label: 'Thriller & Mystery' },
+        { value: 'scifi', label: 'Sci-Fi & Fantasy' },
+        { value: 'romance', label: 'Romance' }
       ]
     },
     {
-      id: 'era',
-      question: "Which era appeals to you?",
+      id: 'company',
+      question: 'Who are you watching with?',
       options: [
-        { value: 'classic', label: 'Classic films (Before 2000)', emoji: '🎞️' },
-        { value: 'modern', label: 'Modern hits (2000-2015)', emoji: '🎪' },
-        { value: 'recent', label: 'Latest releases (2015+)', emoji: '✨' },
-        { value: 'mixed', label: 'Mix of all eras', emoji: '🎨' }
+        { value: 'alone', label: 'Just me' },
+        { value: 'partner', label: 'Partner/Date' },
+        { value: 'friends', label: 'Friends' },
+        { value: 'family', label: 'Family' }
       ]
     },
     {
-      id: 'popularity',
-      question: "Do you prefer...",
+      id: 'preference',
+      question: 'What do you prefer?',
       options: [
-        { value: 'popular', label: 'Popular blockbusters everyone talks about', emoji: '🔥' },
-        { value: 'hidden', label: 'Hidden gems and underrated content', emoji: '💎' },
-        { value: 'trending', label: 'What\'s trending right now', emoji: '📈' },
-        { value: 'classic', label: 'Timeless classics', emoji: '👑' }
+        { value: 'new', label: 'Latest releases' },
+        { value: 'popular', label: 'Popular favorites' },
+        { value: 'classic', label: 'Classic films' },
+        { value: 'hidden', label: 'Hidden gems' }
       ]
     }
   ];
 
-  const handleAnswer = (questionId, answer) => {
-    setAnswers(prev => ({ ...prev, [questionId]: answer }));
+  const analyzeMood = (input) => {
+    const text = input.toLowerCase();
     
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      generateRecommendations({ ...answers, [questionId]: answer });
+    // Genre mapping with more keywords
+    const genreKeywords = {
+      'comedy': ['funny', 'laugh', 'humor', 'lighthearted', 'fun', 'comedy', 'hilarious', 'comic'],
+      'action': ['action', 'adventure', 'exciting', 'thrilling', 'adrenaline', 'fast', 'intense'],
+      'drama': ['emotional', 'deep', 'meaningful', 'serious', 'touching', 'drama', 'dramatic'],
+      'horror': ['scary', 'horror', 'frightening', 'suspenseful', 'terrifying', 'spooky'],
+      'romance': ['romantic', 'love', 'date', 'girlfriend', 'boyfriend', 'relationship', 'romantic'],
+      'documentary': ['learn', 'educational', 'documentary', 'informative', 'knowledge', 'facts'],
+      'thriller': ['suspense', 'mystery', 'thriller', 'intense', 'crime', 'detective']
+    };
+
+    // Enhanced time-based keywords
+    const timeKeywords = {
+      'series': ['series', 'binge', 'episodes', 'show', 'tv show', 'web series', 'season', 'seasons'],
+      'movie': ['movie', 'film', 'quick', 'short', 'cinema', 'flick']
+    };
+
+    // Content type keywords
+    const contentTypeKeywords = {
+      'webseries': ['web series', 'webseries', 'online series', 'streaming series'],
+      'tv': ['tv show', 'television', 'tv series'],
+      'movie': ['movie', 'film', 'cinema']
+    };
+
+    let detectedGenre = '';
+    let detectedType = 'movie';
+    let detectedContentType = '';
+    
+    // Detect genre
+    for (const [genre, keywords] of Object.entries(genreKeywords)) {
+      if (keywords.some(keyword => text.includes(keyword))) {
+        detectedGenre = genre;
+        break;
+      }
     }
+
+    // Detect time preference
+    for (const [type, keywords] of Object.entries(timeKeywords)) {
+      if (keywords.some(keyword => text.includes(keyword))) {
+        detectedType = type;
+        break;
+      }
+    }
+
+    // Detect specific content type
+    for (const [contentType, keywords] of Object.entries(contentTypeKeywords)) {
+      if (keywords.some(keyword => text.includes(keyword))) {
+        detectedContentType = contentType;
+        break;
+      }
+    }
+
+    // Override type based on content type detection
+    if (detectedContentType === 'webseries' || detectedContentType === 'tv') {
+      detectedType = 'series';
+    }
+
+    return { 
+      genre: detectedGenre, 
+      type: detectedType,
+      contentType: detectedContentType 
+    };
   };
 
-  const generateRecommendations = async (userAnswers) => {
-    setLoading(true);
-    setQuizComplete(true);
-    
+  const getRecommendations = async (searchParams) => {
     try {
-      let recommendations = [];
+      let results = [];
       
-      // Enhanced genre mapping with TV genres
+      // Genre mapping for movies
       const movieGenreMap = {
-        action: [28, 53, 12], // Action, Thriller, Adventure
-        comedy: [35, 10751], // Comedy, Family
-        drama: [18, 10749, 36], // Drama, Romance, History
-        horror: [27, 9648], // Horror, Mystery
-        romance: [10749, 35, 18] // Romance, Comedy, Drama
+        'comedy': '35',
+        'action': '28',
+        'drama': '18',
+        'horror': '27',
+        'romance': '10749',
+        'thriller': '53',
+        'documentary': '99'
       };
 
+      // Genre mapping for TV shows (slightly different IDs)
       const tvGenreMap = {
-        action: [10759, 80], // Action & Adventure, Crime
-        comedy: [35, 10751], // Comedy, Family
-        drama: [18, 80, 9648], // Drama, Crime, Mystery
-        horror: [9648, 80], // Mystery, Crime
-        romance: [18, 10749] // Drama, Romance
+        'comedy': '35',
+        'action': '10759',
+        'drama': '18',
+        'horror': '27',
+        'romance': '10749',
+        'thriller': '9648',
+        'documentary': '99'
       };
-
-      const selectedMovieGenres = movieGenreMap[userAnswers.mood] || [28];
-      const selectedTVGenres = tvGenreMap[userAnswers.mood] || [18];
       
-      // Content type and time-based logic
-      const contentType = userAnswers.contentType;
-      const timeAvailable = userAnswers.timeAvailable;
-      const era = userAnswers.era;
-      const popularity = userAnswers.popularity;
-
-      // Movie recommendations
-      if (contentType === 'movie' || contentType === 'any') {
-        let movieData;
+      if (searchParams.genre) {
+        const movieGenreId = movieGenreMap[searchParams.genre];
+        const tvGenreId = tvGenreMap[searchParams.genre];
         
-        if (popularity === 'popular') {
-          movieData = await getMoviesByGenre(selectedMovieGenres[0], 1);
-        } else if (popularity === 'trending') {
-          movieData = await getPopularMovies(1);
-        } else if (popularity === 'hidden') {
-          movieData = await getMoviesByGenre(selectedMovieGenres[1] || selectedMovieGenres[0], 2);
+        // Fetch different content types based on user preference
+        if (searchParams.type === 'series') {
+          // Fetch TV shows and web series
+          const [tvShows, webSeries] = await Promise.all([
+            tvGenreId ? getTVShowsByGenre(tvGenreId, 1) : getPopularTVShows(1),
+            getDistinctWebSeries(1)
+          ]);
+          
+          // Transform TV shows
+          const transformedTVShows = (tvShows.results || []).slice(0, 6).map(show => ({
+            ...show,
+            title: show.name,
+            release_date: show.first_air_date,
+            media_type: 'tv'
+          }));
+          
+          // Transform web series
+          const transformedWebSeries = (webSeries.results || []).slice(0, 6).map(series => ({
+            ...series,
+            title: series.name,
+            release_date: series.first_air_date,
+            media_type: 'webseries'
+          }));
+          
+          results = [...transformedTVShows, ...transformedWebSeries];
         } else {
-          movieData = await getTopRatedMovies(1);
+          // Fetch movies - fix the API call
+          if (movieGenreId) {
+            const movieResponse = await getPopularMovies(1, movieGenreId);
+            results = (movieResponse.results || []).slice(0, 8).map(movie => ({
+              ...movie,
+              media_type: 'movie'
+            }));
+          }
+          
+          // Also include some TV content for variety
+          const tvResponse = await getPopularTVShows(1);
+          const transformedTV = (tvResponse.results || []).slice(0, 4).map(show => ({
+            ...show,
+            title: show.name,
+            release_date: show.first_air_date,
+            media_type: 'tv'
+          }));
+          
+          results = [...results, ...transformedTV];
         }
+      }
+      
+      // Fallback: get mixed content if no specific genre
+      if (results.length === 0) {
+        const [movies, tvShows, webSeries] = await Promise.all([
+          getTrendingMovies(),
+          getPopularTVShows(1),
+          getDistinctWebSeries(1)
+        ]);
         
-        let filteredMovies = movieData.results;
-        
-        // Filter by era
-        if (era !== 'mixed') {
-          filteredMovies = filteredMovies.filter(movie => {
-            if (!movie.release_date) return false;
-            const year = new Date(movie.release_date).getFullYear();
-            
-            switch (era) {
-              case 'classic': return year < 2000;
-              case 'modern': return year >= 2000 && year <= 2015;
-              case 'recent': return year > 2015;
-              default: return true;
-            }
-          });
-        }
-        
-        // Filter by time available (for movies, check runtime in future API call)
-        const movieCount = timeAvailable === 'short' ? 3 : timeAvailable === 'binge' ? 8 : 6;
-        const moviesWithMediaType = filteredMovies.slice(0, movieCount).map(movie => ({
+        // Mix different content types
+        const transformedMovies = (movies.results || []).slice(0, 4).map(movie => ({
           ...movie,
           media_type: 'movie'
         }));
-        recommendations.push(...moviesWithMediaType);
-      }
-      
-      // TV Show recommendations
-      if (contentType === 'tv' || contentType === 'any') {
-        let tvData;
         
-        if (popularity === 'popular') {
-          tvData = await getTVShowsByGenre(selectedTVGenres[0], 1);
-        } else if (popularity === 'trending') {
-          tvData = await getPopularTVShows(1);
-        } else {
-          tvData = await getTopRatedTVShows(1);
-        }
-        
-        const transformedTv = tvData.results.slice(0, 4).map(show => ({
+        const transformedTVShows = (tvShows.results || []).slice(0, 4).map(show => ({
           ...show,
           title: show.name,
           release_date: show.first_air_date,
           media_type: 'tv'
         }));
-        recommendations.push(...transformedTv);
-      }
-      
-      // Web Series recommendations
-      if (contentType === 'webseries' || contentType === 'any') {
-        let webSeriesData;
         
-        if (popularity === 'popular') {
-          webSeriesData = await getPopularWebSeries(1);
-        } else {
-          webSeriesData = await getTopRatedWebSeries(1);
-        }
-        
-        const transformedWebSeries = webSeriesData.results.slice(0, 4).map(series => ({
+        const transformedWebSeries = (webSeries.results || []).slice(0, 4).map(series => ({
           ...series,
           title: series.name,
           release_date: series.first_air_date,
           media_type: 'webseries'
         }));
-        recommendations.push(...transformedWebSeries);
+        
+        results = [...transformedMovies, ...transformedTVShows, ...transformedWebSeries];
       }
       
-      // Enhanced sorting based on user preferences
-      let sortedRecommendations = recommendations;
-      
-      if (popularity === 'popular') {
-        sortedRecommendations = recommendations.sort((a, b) => b.popularity - a.popularity);
-      } else if (popularity === 'classic') {
-        sortedRecommendations = recommendations.sort((a, b) => b.vote_average - a.vote_average);
-      } else if (popularity === 'trending') {
-        sortedRecommendations = recommendations.sort((a, b) => b.vote_count - a.vote_count);
-      }
-      
-      // Remove duplicates and limit results
-      const uniqueRecommendations = sortedRecommendations.filter((item, index, self) => 
-        index === self.findIndex(t => t.id === item.id)
-      );
-      
-      setRecommendations(uniqueRecommendations.slice(0, 12));
-      
+      // Shuffle results for variety
+      return results.sort(() => Math.random() - 0.5).slice(0, 12);
     } catch (error) {
-      console.error('Error generating recommendations:', error);
-      // Fallback recommendations
-      try {
-        const fallbackData = await getPopularMovies(1);
-        setRecommendations(fallbackData.results.slice(0, 8));
-      } catch (fallbackError) {
-        console.error('Error loading fallback recommendations:', fallbackError);
+      console.error('Error getting recommendations:', error);
+      return [];
+    }
+  };
+
+  const handleMoodSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!moodInput.trim()) {
+      setError('Please describe your mood or what you\'re looking for');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setHasSearched(true);
+    
+    try {
+      const analysis = analyzeMood(moodInput);
+      const results = await getRecommendations(analysis);
+      
+      setRecommendations(results);
+      
+      // Enhanced analysis result message
+      let contentTypeText = 'content';
+      if (analysis.type === 'series') {
+        contentTypeText = 'TV shows and web series';
+      } else if (analysis.contentType === 'movie') {
+        contentTypeText = 'movies';
+      } else {
+        contentTypeText = 'movies and shows';
       }
+      
+      setAnalysisResult(
+        `Based on your mood, I found some great ${analysis.genre || 'popular'} ${contentTypeText} for you!`
+      );
+    } catch (error) {
+      setError('Failed to get recommendations. Please try again.');
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const resetQuiz = () => {
-    setCurrentQuestion(0);
-    setAnswers({});
-    setRecommendations([]);
-    setQuizComplete(false);
+  const handleExampleClick = (example) => {
+    setMoodInput(example);
   };
 
-  const progressPercentage = ((currentQuestion + 1) / questions.length) * 100;
+  // Quiz functions
+  const startQuiz = () => {
+    setQuizStarted(true);
+    setCurrentQuestion(0);
+    setQuizAnswers({});
+    setQuizCompleted(false);
+  };
 
-  if (quizComplete) {
-    return (
-      <div className="movie-picker-page">
-        <div className="results-container">
-          <div className="results-header">
-            <div className="results-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-            <h1>Your Perfect Matches!</h1>
-            <p>Based on your preferences, here are our top recommendations:</p>
-            
-            <div className="results-actions">
-              <button onClick={resetQuiz} className="btn btn-secondary">
-                <svg className="btn-icon" viewBox="0 0 24 24">
-                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                </svg>
-                Take Quiz Again
-              </button>
-              <Link to="/" className="btn btn-primary">
-                <svg className="btn-icon" viewBox="0 0 24 24">
-                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                </svg>
-                Back to Home
-              </Link>
-            </div>
-          </div>
-          
-          {loading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <p>Finding your perfect matches...</p>
-            </div>
-          ) : (
-            <div className="recommendations-grid">
-              {recommendations.map(item => (
-                <MovieCard key={item.id} movie={item} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const handleQuizAnswer = (questionId, answer) => {
+    const newAnswers = { ...quizAnswers, [questionId]: answer };
+    setQuizAnswers(newAnswers);
 
-  const question = questions[currentQuestion];
+    if (currentQuestion < quizQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      completeQuiz(newAnswers);
+    }
+  };
+
+  const completeQuiz = async (answers) => {
+    setQuizCompleted(true);
+    setLoading(true);
+    
+    try {
+      // Generate recommendations based on quiz answers
+      const searchParams = mapQuizAnswersToSearch(answers);
+      const results = await getRecommendations(searchParams);
+      
+      setRecommendations(results);
+      setHasSearched(true);
+      setAnalysisResult(generateQuizAnalysis(answers));
+    } catch (error) {
+      setError('Failed to get recommendations. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapQuizAnswersToSearch = (answers) => {
+    const genreMapping = {
+      'action': 'action',
+      'comedy': 'comedy',
+      'drama': 'drama',
+      'thriller': 'thriller',
+      'scifi': 'action',
+      'romance': 'romance'
+    };
+
+    return {
+      genre: genreMapping[answers.genre] || '',
+      type: answers.time === 'series' ? 'series' : 'movie'
+    };
+  };
+
+  const generateQuizAnalysis = (answers) => {
+    const mood = answers.mood || 'good';
+    const genre = answers.genre || 'popular';
+    const company = answers.company || 'yourself';
+    const time = answers.time || 'medium';
+    
+    let contentType = 'content';
+    if (time === 'series') {
+      contentType = 'TV shows and web series';
+    } else if (time === 'short') {
+      contentType = 'movies';
+    } else {
+      contentType = 'movies, TV shows, and web series';
+    }
+    
+    return `Perfect! Based on your ${mood} mood and preference for ${genre} ${contentType}, I've found some great recommendations for you${company !== 'alone' ? ` and your ${company}` : ''}!`;
+  };
+
+  const resetQuiz = () => {
+    setQuizStarted(false);
+    setQuizCompleted(false);
+    setCurrentQuestion(0);
+    setQuizAnswers({});
+    setRecommendations([]);
+    setHasSearched(false);
+    setAnalysisResult('');
+  };
+
+  const resetMood = () => {
+    setMoodInput('');
+    setRecommendations([]);
+    setHasSearched(false);
+    setAnalysisResult('');
+    setError('');
+  };
 
   return (
     <div className="movie-picker-page">
-      <div className="quiz-container">
-        <div className="quiz-header">
-          <Link to="/" className="back-btn">
+      <div className="mood-container">
+        <div className="mood-header">
+          <div className="mood-icon">
             <svg viewBox="0 0 24 24">
-              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+              <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14 14 11.99 14 9.5 11.99 5 9.5 5Z"/>
             </svg>
-            Back
-          </Link>
-          
-          <div className="progress-container">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
+          </div>
+          <h1 className="mood-title">What to Watch?</h1>
+          <p className="mood-subtitle">
+            Tell us your mood or take our quick quiz to get personalized recommendations 
+            for movies, TV shows, and web series.
+          </p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="recommendation-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'mood' ? 'active' : ''}`}
+            onClick={() => setActiveTab('mood')}
+          >
+            Describe Your Mood
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'quiz' ? 'active' : ''}`}
+            onClick={() => setActiveTab('quiz')}
+          >
+            Take Quiz
+          </button>
+        </div>
+
+        {/* Mood Input Tab */}
+        {activeTab === 'mood' && (
+          <div className="tab-content">
+            <div className="mood-input-section">
+              <form onSubmit={handleMoodSubmit} className="mood-form">
+                <div className="mood-input-container">
+                  <textarea
+                    className="mood-input"
+                    value={moodInput}
+                    onChange={(e) => setMoodInput(e.target.value)}
+                    placeholder="Describe your mood, who you're with, or what type of content you're looking for..."
+                    rows="4"
+                  />
+                </div>
+                
+                <div className="mood-examples">
+                  {exampleMoods.map((example, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="example-chip"
+                      onClick={() => handleExampleClick(example)}
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mood-actions">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={loading || !moodInput.trim()}
+                  >
+                    {loading ? 'Finding recommendations...' : 'Get Recommendations'}
+                  </button>
+                  
+                  {hasSearched && (
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary"
+                      onClick={resetMood}
+                    >
+                      Start Over
+                    </button>
+                  )}
+                </div>
+              </form>
             </div>
-            <span className="progress-text">
-              {currentQuestion + 1} of {questions.length}
-            </span>
           </div>
-        </div>
-        
-        <div className="question-container">
-          <h1 className="question-title">{question.question}</h1>
-          
-          <div className="options-grid">
-            {question.options.map((option, index) => (
-              <button
-                key={index}
-                className="option-card"
-                onClick={() => handleAnswer(question.id, option.value)}
-              >
-                <div className="option-emoji">{option.emoji}</div>
-                <div className="option-text">{option.label}</div>
-              </button>
-            ))}
+        )}
+
+        {/* Quiz Tab */}
+        {activeTab === 'quiz' && (
+          <div className="tab-content">
+            {!quizStarted ? (
+              <div className="quiz-intro">
+                <h3>Quick Recommendation Quiz</h3>
+                <p>Answer 5 simple questions to get personalized recommendations</p>
+                <button className="btn btn-primary" onClick={startQuiz}>
+                  Start Quiz
+                </button>
+              </div>
+            ) : !quizCompleted ? (
+              <div className="quiz-container">
+                <div className="quiz-progress">
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%` }}
+                    />
+                  </div>
+                  <span className="progress-text">
+                    Question {currentQuestion + 1} of {quizQuestions.length}
+                  </span>
+                </div>
+
+                <div className="quiz-question">
+                  <h3>{quizQuestions[currentQuestion].question}</h3>
+                  <div className="quiz-options">
+                    {quizQuestions[currentQuestion].options.map((option) => (
+                      <button
+                        key={option.value}
+                        className="quiz-option"
+                        onClick={() => handleQuizAnswer(quizQuestions[currentQuestion].id, option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="quiz-complete">
+                <h3>Quiz Complete!</h3>
+                <p>Getting your personalized recommendations...</p>
+                <button className="btn btn-secondary" onClick={resetQuiz}>
+                  Take Quiz Again
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="error-message">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            {error}
+          </div>
+        )}
+
+        {/* Results Section */}
+        {hasSearched && (
+          <div className="results-section">
+            {loading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Finding perfect recommendations for you...</p>
+              </div>
+            ) : (
+              <>
+                {analysisResult && (
+                  <div className="analysis-result">
+                    <h3>Here's what I found:</h3>
+                    <p>{analysisResult}</p>
+                  </div>
+                )}
+                
+                {recommendations.length > 0 ? (
+                  <div className="recommendations-grid">
+                    {recommendations.map((movie) => (
+                      <MovieCard key={movie.id} movie={movie} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-results">
+                    <p>No recommendations found. Try describing your mood differently or browse our categories.</p>
+                    <Link to="/movies" className="btn btn-secondary">
+                      Browse Movies
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default MoviePicker;
+
+
+export default WhatToWatch;
