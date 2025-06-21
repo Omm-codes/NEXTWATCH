@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+
 import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import './styles/App.css'; // Updated import path

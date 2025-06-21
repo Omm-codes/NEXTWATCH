@@ -3,7 +3,11 @@
   "description": "Responsive and user-friendly web application designed to enhance the way users discover and track movies.",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^7.4.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -16,13 +20,18 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.30.1",
     "react-scripts": "5.0.1",
+    "react-snap": "^1.23.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postbuild": "react-snap"
+  },
+  "reactSnap": {
+  "inlineCss": true
   },
   "eslintConfig": {
     "extends": [
@@ -41,5 +50,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }
