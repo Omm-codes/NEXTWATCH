@@ -1,5 +1,5 @@
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY;
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswers = null) => {
   try {
@@ -13,14 +13,14 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
       prompt = generateMoodPrompt(userInput);
     }
 
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'llama3-8b-8192',
         messages: [
           {
             role: 'system',
@@ -37,14 +37,14 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`Groq API error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices[0]?.message?.content?.trim();
     
     if (!aiResponse) {
-      throw new Error('No response from OpenAI');
+      throw new Error('No response from Groq');
     }
 
     // Parse the AI response to extract movie/show titles
@@ -102,14 +102,14 @@ export const generateSmartDescription = async (movieData, userPreferences = null
     
     const prompt = generateDescriptionPrompt(movieData, userPreferences);
 
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'llama3-8b-8192',
         messages: [
           {
             role: 'system',
@@ -126,7 +126,7 @@ export const generateSmartDescription = async (movieData, userPreferences = null
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`Groq API error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -160,14 +160,14 @@ ${reviewTexts}
 
 Please provide a concise summary (2-3 sentences) that reflects the general consensus while highlighting both positive and negative aspects if present.`;
 
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'llama3-8b-8192',
         messages: [
           {
             role: 'system',
@@ -184,7 +184,7 @@ Please provide a concise summary (2-3 sentences) that reflects the general conse
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`Groq API error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -208,14 +208,14 @@ Overview: ${movieData.overview}
 
 Focus on the emotional appeal and how it matches their mood.`;
 
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'llama3-8b-8192',
         messages: [
           {
             role: 'system',
@@ -232,7 +232,7 @@ Focus on the emotional appeal and how it matches their mood.`;
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`Groq API error: ${response.status}`);
     }
 
     const data = await response.json();
