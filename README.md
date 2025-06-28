@@ -1,144 +1,65 @@
-# NextWatch 🎬
+# NextWatch 🎬 – Your Personal Movie & TV Platform
 
-A modern movie and TV show discovery platform built with React. Discover your next favorite movie through personalized recommendations and intuitive browsing.
+NextWatch is a modern, feature-rich movie and TV show discovery platform that helps you find, save, and enjoy the best content from around the world. Combining traditional search with personalized recommendations and a smart quiz, NextWatch makes discovering your next favorite show effortless and fun.
+
+![NextWatch Screenshot](./screenshots/homepage.jpg)
 
 ## 🌟 Features
 
-- **🔍 Search & Browse** - Find movies, TV shows, and web series
-- **📚 Personal Watchlist** - Save content to watch later
-- **🎯 Personalized Quiz** - Get recommendations based on your mood
-- **🔐 User Accounts** - Sign up with email or Google
-- **📱 Responsive Design** - Works on all devices
+- **Search & Discovery**: Browse thousands of movies, TV shows, and web series by genre, rating, or mood
+- **Personalized Quiz**: Get AI-powered recommendations based on your mood and preferences
+- **Watchlist**: Save movies and shows to your personal watchlist
+- **User Accounts**: Sign up with email or Google, manage your profile and preferences
+- **Trending & Popular**: See what's trending and highly rated
+- **Responsive Design**: Enjoy a seamless experience on desktop, tablet, and mobile devices
 
-## 🛠️ Tech Stack
-
-- **React 18** - Frontend framework
-- **Firebase** - Authentication & database
-- **TMDB API** - Movie & TV data
-- **CSS3** - Styling
-
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v14+)
 - npm or yarn
 
 ### Installation
-```bash
-git clone https://github.com/your-username/nextwatch.git
-cd nextwatch
-npm install
-```
 
-### Environment Setup
-Create a `.env` file:
-```env
-REACT_APP_TMDB_API_KEY=your_tmdb_api_key
-REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/nextwatch.git
+   cd nextwatch
+   ```
 
-### Run Development Server
-```bash
-npm start
-```
-Open [http://localhost:3000](http://localhost:3000)
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Create a `.env` file in the root directory with the following variables:
+   ```env
+   # TMDB API Configuration
+   REACT_APP_TMDB_API_KEY=your_tmdb_api_key
+   REACT_APP_TMDB_BASE_URL=https://api.themoviedb.org/3
+
+   # Firebase Configuration
+   REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   REACT_APP_FIREBASE_APP_ID=your_app_id
+   ```
+
+4. Start the development server:
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) to view the app in your browser.
 
 ## 📁 Project Structure
-
-```
-src/
-├── components/     # Reusable UI components
-├── pages/         # Page components
-├── services/      # API & Firebase
-├── contexts/      # React contexts
-└── assets/        # Images & static files
-```
-
-## 🚀 Deployment
-
-```bash
-npm run build
-firebase deploy
-```
-
-## 📝 License
-
-MIT License - see [LICENSE](LICENSE) file.
-
-## 📞 Contact
-
-**Om Chavan** - [LinkedIn](https://www.linkedin.com/in/om-chavan003) | omsanjay975@gmail.com
-
----
-
-Made with ❤️ for movie lovers everywhere.
-git clone https://github.com/your-username/nextwatch.git
-cd nextwatch
-```
-
-### Install Dependencies
-```bash
-npm install
-# or
-yarn install
-```
-
-### Environment Variables
-Create a `.env` file in the root directory:
-
-```env
-# TMDB API Configuration
-REACT_APP_TMDB_API_KEY=your_tmdb_api_key_here
-REACT_APP_TMDB_BASE_URL=https://api.themoviedb.org/3
-
-# Firebase Configuration
-REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-REACT_APP_FIREBASE_APP_ID=your_app_id
-```
-
-### API Setup
-
-#### 1. TMDB API Key
-1. Visit [The Movie Database](https://www.themoviedb.org/)
-2. Create an account and request an API key
-3. Add your API key to the `.env` file
-
-#### 2. Firebase Setup
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable Authentication (Email/Password and Google)
-4. Create a Firestore database
-5. Add your Firebase config to the `.env` file
-
-### Run the Development Server
-```bash
-npm start
-# or
-yarn start
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-## 📝 Available Scripts
-
-### Development
-- **`npm start`** - Runs the app in development mode
-- **`npm test`** - Launches the test runner
-- **`npm run build`** - Builds the app for production
-- **`npm run eject`** - Ejects from Create React App (one-way operation)
-
-### Linting & Formatting
-- **`npm run lint`** - Run ESLint to check code quality
-- **`npm run lint:fix`** - Fix auto-fixable ESLint issues
-- **`npm run format`** - Format code with Prettier
-
-## 🏗️ Project Structure
 
 ```
 nextwatch/
@@ -148,9 +69,88 @@ nextwatch/
 │   └── favicon.ico
 ├── src/
 │   ├── components/         # Reusable UI components
-│   │   ├── Navbar/
-│   │   ├── MovieCard/
-│   │   ├── Footer/
+│   ├── pages/             # Page components
+│   ├── services/          # API and Firebase logic
+│   ├── contexts/          # React contexts
+│   ├── assets/            # Images & static files
+│   ├── styles/            # Global styles
+│   └── utils/             # Utility functions
+├── .env
+├── package.json
+└── README.md
+```
+
+## 🛠️ Technologies Used
+
+- **React**: Frontend library for building user interfaces
+- **Firebase**: Authentication and Firestore database
+- **TMDB API**: For movie and TV show data
+- **CSS3**: For styling components
+
+## 🎯 Key Features & Usage
+
+### Search & Discovery
+Find movies, TV shows, and web series by name, genre, or mood. Use advanced filters to narrow down results.
+
+### Personalized Quiz
+Take a quick quiz to get recommendations tailored to your mood, available time, and preferences.
+
+### Watchlist
+Save your favorite content to your personal watchlist and keep track of what you want to watch next.
+
+### User Accounts
+Sign up with email or Google, manage your profile, and sync your watchlist across devices.
+
+### Trending & Popular
+Stay up-to-date with trending and highly rated content.
+
+## 🚀 Deployment
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Deploy to Firebase Hosting
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init hosting
+firebase deploy
+```
+
+### Deploy to Netlify or Vercel
+- Build the project: `npm run build`
+- Drag and drop the `build` folder to Netlify or use `vercel` CLI for Vercel
+
+## 🤝 Contributing
+
+We welcome contributions! To contribute:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/YourFeature`)
+3. Make your changes and commit them (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
+5. Open a pull request
+
+Please ensure your code follows the project's coding standards.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+For inquiries or support, please contact:
+
+- Om Chavan - [LinkedIn](https://www.linkedin.com/in/om-chavan003) | [Instagram](https://www.instagram.com/om_chavan_003)
+- Email: [omsanjay975@gmail.com](mailto:omsanjay975@gmail.com)
+
+---
+
+Made with ❤️ by Om Chavan for movie lovers everywhere.
+
+*NextWatch – Discover. Watch. Enjoy.*
 │   │   └── LoadingSkeleton/
 │   ├── pages/             # Page components
 │   │   ├── Home/
