@@ -2,7 +2,7 @@
 
 NextWatch is a modern, feature-rich movie and TV show discovery platform that helps you find, save, and enjoy the best content from around the world. Combining traditional search with personalized recommendations and a smart quiz, NextWatch makes discovering your next favorite show effortless and fun.
 
-![NextWatch Screenshot](./screenshots/homepage.jpg)
+![NextWatch Screenshot](./screenshot/homepage.jpg)
 
 ## 🌟 Features
 
