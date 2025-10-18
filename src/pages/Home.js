@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
 import { MovieCardSkeleton, HeroSkeleton } from '../components/LoadingSkeleton';
@@ -8,7 +8,7 @@ import {
   getUpcomingMovies,
   getPopularTVShows,
   getDistinctWebSeries,
-  searchMovies
+  getMovieVideos
 } from '../services/api';
 import './Home.css';
 
@@ -22,24 +22,91 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // Add filter state
+  const [heroMovie, setHeroMovie] = useState(null);
+  const [heroTrailerKey, setHeroTrailerKey] = useState(null);
+  const [heroTrailerReady, setHeroTrailerReady] = useState(false);
+  const [heroTrailerTimeout, setHeroTrailerTimeout] = useState(null);
+  const heroVideoRef = useRef(null);
+  const [isHeroInView, setIsHeroInView] = useState(true);
   const navigate = useNavigate();
 
+  // Pause/play trailer when hero section leaves/enters viewport
+  useEffect(() => {
+    const heroSection = document.querySelector('.netflix-hero-section');
+    if (!heroSection) return;
+
+    const handleIntersection = (entries) => {
+      entries.forEach(entry => {
+        setIsHeroInView(entry.isIntersecting);
+      });
+    };
+
+    const observer = new window.IntersectionObserver(handleIntersection, {
+      threshold: 0.25
+    });
+    observer.observe(heroSection);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Control YouTube video playback based on hero visibility
+  useEffect(() => {
+    if (!heroVideoRef.current) return;
+    // Access the iframe's contentWindow and postMessage to YouTube API
+    const iframe = heroVideoRef.current;
+    // Only send messages if the iframe is loaded and YouTube API is ready
+    const postPlayPause = () => {
+      iframe.contentWindow.postMessage(
+        JSON.stringify({
+          event: 'command',
+          func: isHeroInView ? 'playVideo' : 'pauseVideo',
+          args: []
+        }),
+        '*'
+      );
+    };
+    // Wait a bit for the iframe to load
+    setTimeout(postPlayPause, 300);
+  }, [isHeroInView, heroTrailerKey]);
+
+  // Helper to fetch trailer for a given movie
+  const fetchTrailerForMovie = async (movie) => {
+    if (!movie) {
+      setHeroTrailerKey(null);
+      return;
+    }
+    try {
+      const videos = await getMovieVideos(movie.id);
+      const trailer = videos.results.find(
+        v => v.type === 'Trailer' && v.site === 'YouTube'
+      ) || videos.results.find(v => v.site === 'YouTube');
+      setHeroTrailerKey(trailer ? trailer.key : null);
+    } catch (error) {
+      setHeroTrailerKey(null);
+    }
+  };
+
+  // Store hero movies for rotation
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [trending, popular, webSeriesData, tvShows, upcoming] = await Promise.all([
           getTrendingMovies(),
           getPopularMovies(1),
-          getDistinctWebSeries(1), // Use distinct web series function
+          getDistinctWebSeries(1),
           getPopularTVShows(1),
           getUpcomingMovies(1)
         ]);
-
-        setHeroMovies(trending.results.slice(0, 5));
+        setHeroMovies(trending.results.slice(0, 5)); // Store top 5 trending for hero rotation
+        setHeroMovie(trending.results[0]);
         setPopularMovies(popular.results.slice(0, 10));
         setWebSeries(webSeriesData.results.slice(0, 10));
         setPopularTVShows(tvShows.results.slice(0, 10));
         setUpcomingMovies(upcoming.results.slice(0, 10));
+        // Fetch trailer for first hero movie
+        if (trending.results[0]) {
+          fetchTrailerForMovie(trending.results[0]);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -50,9 +117,39 @@ const Home = () => {
     fetchData();
   }, []);
 
+  // When hero movie changes, fetch its trailer
+  useEffect(() => {
+    if (heroMovies.length > 0 && typeof currentHeroIndex === 'number') {
+      const movie = heroMovies[currentHeroIndex];
+      setHeroMovie(movie);
+      fetchTrailerForMovie(movie);
+    }
+    // eslint-disable-next-line
+  }, [currentHeroIndex, heroMovies]);
+
+  // Auto-advance hero trailer after 2 minutes (120 seconds)
+  useEffect(() => {
+    // Clear any previous timeout
+    if (heroTrailerTimeout) {
+      clearTimeout(heroTrailerTimeout);
+    }
+    // Only set timeout if there is a trailer key
+    if (heroTrailerKey) {
+      const timeout = setTimeout(() => {
+        setCurrentHeroIndex((prevIndex) =>
+          prevIndex === heroMovies.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 120000); // 120 seconds (2 minutes)
+      setHeroTrailerTimeout(timeout);
+      return () => clearTimeout(timeout);
+    }
+    // eslint-disable-next-line
+  }, [heroTrailerKey, currentHeroIndex, heroMovies.length]);
+
   // Auto-rotate hero slides
   useEffect(() => {
-    if (heroMovies.length > 0) {
+    // Only auto-rotate if there is no trailer (fallback for images)
+    if (heroMovies.length > 0 && !heroTrailerKey) {
       const interval = setInterval(() => {
         setCurrentHeroIndex((prevIndex) => 
           prevIndex === heroMovies.length - 1 ? 0 : prevIndex + 1
@@ -61,7 +158,7 @@ const Home = () => {
 
       return () => clearInterval(interval);
     }
-  }, [heroMovies.length]);
+  }, [heroMovies.length, heroTrailerKey]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -132,7 +229,7 @@ const Home = () => {
 
   const currentHeroMovie = heroMovies[currentHeroIndex];
 
-  if (loading) {
+  if (loading || !heroMovie) {
     return (
       <div className="home-page">
         {/* Hero Skeleton */}
@@ -301,82 +398,82 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* Hero Section with animation */}
-      {currentHeroMovie && (
-        <section className="hero-section animate-fade-in">
-          <div 
-            className="hero-background"
-            style={{
-              backgroundImage: `url(https://image.tmdb.org/t/p/original${currentHeroMovie.backdrop_path})`
-            }}
-          />
-          <div className="hero-overlay" />
-          
-          <div className="hero-content">
-            <div className="hero-info">
-              <div className="hero-badges">
-                <span className="badge trending">Trending</span>
-                <span className="badge rating">
-                  ⭐ {currentHeroMovie.vote_average?.toFixed(1)}
-                </span>
-              </div>
-              
-              <h1 className="hero-title">
-                {currentHeroMovie.title}
-                <span className="release-year">
-                  ({currentHeroMovie.release_date ? new Date(currentHeroMovie.release_date).getFullYear() : 'N/A'})
-                </span>
-              </h1>
-              
-              <p className="hero-overview">
-                {currentHeroMovie.overview?.length > 200 
-                  ? currentHeroMovie.overview.substring(0, 200) + '...'
-                  : currentHeroMovie.overview}
-              </p>
-              
-              <div className="hero-actions">
-                <Link 
-                  to={`/movie/${currentHeroMovie.id}`} 
-                  className="btn btn-primary btn-large"
-                >
-                  <svg className="btn-icon" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                  Watch Details
-                </Link>
-                
-                <Link to="/movies" className="btn btn-secondary btn-large">
-                  <svg className="btn-icon" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  Explore Movies
-                </Link>
-              </div>
-            </div>
-            
-            <div className="hero-poster">
-              <img 
-                src={`https://image.tmdb.org/t/p/w500${currentHeroMovie.poster_path}`}
-                alt={currentHeroMovie.title}
-                className="hero-poster-img"
-                loading="lazy"
+      {/* Netflix-style Hero Section */}
+      <section className="netflix-hero-section">
+        <div 
+          className="netflix-hero-bg"
+          style={{
+            backgroundImage: heroTrailerKey
+              ? undefined
+              : `url(https://image.tmdb.org/t/p/original${heroMovie.backdrop_path})`
+          }}
+        >
+          {/* YouTube trailer as background */}
+          {heroTrailerKey && (
+            <div className="netflix-hero-video-bg">
+              <iframe
+                ref={heroVideoRef}
+                src={`https://www.youtube.com/embed/${heroTrailerKey}?autoplay=1&controls=0&showinfo=0&rel=0&loop=0&playlist=${heroTrailerKey}&modestbranding=1&enablejsapi=1&origin=${window.location.origin}`}
+                title="Hero Trailer"
+                frameBorder="0"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+                className="netflix-hero-video"
+                onLoad={() => setHeroTrailerReady(true)}
               />
+              {/* Overlay to darken video for text readability */}
+              <div className="netflix-hero-overlay" />
+            </div>
+          )}
+          {!heroTrailerKey && <div className="netflix-hero-overlay" />}
+        </div>
+        <div className="netflix-hero-content">
+          <div className="netflix-hero-info">
+            <h1 className="netflix-hero-title">
+              {heroMovie.title}
+              <span className="release-year">
+                ({heroMovie.release_date ? new Date(heroMovie.release_date).getFullYear() : 'N/A'})
+              </span>
+            </h1>
+            <div className="netflix-hero-badges">
+              <span className="badge trending">Trending</span>
+              <span className="badge rating">
+                ⭐ {heroMovie.vote_average?.toFixed(1)}
+              </span>
+            </div>
+            <p className="netflix-hero-overview">
+              {heroMovie.overview?.length > 220
+                ? heroMovie.overview.substring(0, 220) + '...'
+                : heroMovie.overview}
+            </p>
+            <div className="netflix-hero-actions">
+              <Link 
+                to={`/movie/${heroMovie.id}`} 
+                className="btn btn-primary btn-large"
+              >
+                <svg className="btn-icon" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                Watch Details
+              </Link>
+              <Link to="/movies" className="btn btn-secondary btn-large">
+                <svg className="btn-icon" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Explore Movies
+              </Link>
             </div>
           </div>
-          
-          {/* Hero Navigation Dots */}
-          <div className="hero-navigation">
-            {heroMovies.map((_, index) => (
-              <button
-                key={index}
-                className={`hero-dot ${index === currentHeroIndex ? 'active' : ''}`}
-                onClick={() => setCurrentHeroIndex(index)}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+          <div className="netflix-hero-poster">
+            <img 
+              src={`https://image.tmdb.org/t/p/w500${heroMovie.poster_path}`}
+              alt={heroMovie.title}
+              className="netflix-hero-poster-img"
+              loading="lazy"
+            />
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Quiz Section */}
       <section className="quiz-section animate-section" style={{ animationDelay: '0.2s' }}>

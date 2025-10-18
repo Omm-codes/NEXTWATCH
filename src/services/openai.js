@@ -3,6 +3,15 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswers = null) => {
   try {
+    // Check if API key is available
+    if (!GROQ_API_KEY) {
+      console.error('Groq API key is not configured. Please check your .env file.');
+      return { 
+        titles: [], 
+        error: 'AI service not configured. Please restart the development server after setting up your .env file.' 
+      };
+    }
+
     let prompt;
     
     if (isQuiz && quizAnswers) {
@@ -13,6 +22,8 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
       prompt = generateMoodPrompt(userInput);
     }
 
+    console.log('Calling Groq API with prompt:', prompt.substring(0, 100) + '...');
+
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
@@ -20,7 +31,7 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',
@@ -37,10 +48,18 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
     });
 
     if (!response.ok) {
-      throw new Error(`Groq API error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Groq API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(`Groq API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('Groq API response received:', data);
+    
     const aiResponse = data.choices[0]?.message?.content?.trim();
     
     if (!aiResponse) {
@@ -56,6 +75,7 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
       .map(title => title.replace(/^[-*]\s*/, '')) // Remove bullet points if present
       .slice(0, 12); // Limit to 12 titles
 
+    console.log('Extracted titles:', titles);
     return { titles, error: null };
   } catch (error) {
     console.error('Error getting AI recommendations:', error);
@@ -109,7 +129,7 @@ export const generateSmartDescription = async (movieData, userPreferences = null
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',
@@ -167,7 +187,7 @@ Please provide a concise summary (2-3 sentences) that reflects the general conse
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',
@@ -215,7 +235,7 @@ Focus on the emotional appeal and how it matches their mood.`;
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',

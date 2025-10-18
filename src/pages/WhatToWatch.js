@@ -163,7 +163,14 @@ const WhatToWatch = () => {
         // Use OpenAI for intelligent recommendations
         const { titles, error } = await getAIRecommendations(userInput, isQuiz, quizAnswers);
         
+        if (error) {
+          console.warn('AI recommendations failed:', error);
+          // Show a user-friendly error message
+          setError(`AI service unavailable: ${error}. Showing alternative recommendations.`);
+        }
+        
         if (!error && titles.length > 0) {
+          console.log('AI returned titles:', titles);
           // Get enhanced search results with mood-based highlights
           const userMood = isQuiz ? quizAnswers.mood : userInput;
           const aiResults = await getEnhancedSearchResults(titles, userMood);
