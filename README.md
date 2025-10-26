@@ -48,7 +48,12 @@ NextWatch is a modern, feature-rich movie and TV show discovery platform that he
    REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
    REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
    REACT_APP_FIREBASE_APP_ID=your_app_id
+
+   # Groq API Configuration (for AI-powered features)
+   REACT_APP_GROQ_API_KEY=your_groq_api_key
    ```
+
+   **Note:** Get your Groq API key from [https://console.groq.com](https://console.groq.com) to enable AI-powered recommendations.
 
 4. Start the development server:
    ```bash
@@ -85,7 +90,34 @@ nextwatch/
 - **React**: Frontend library for building user interfaces
 - **Firebase**: Authentication and Firestore database
 - **TMDB API**: For movie and TV show data
+- **Groq API with llama3-8b-8192**: AI-powered recommendations and content descriptions
 - **CSS3**: For styling components
+
+## 🤖 AI-Powered Features
+
+NextWatch uses the **Groq API with the llama3-8b-8192 model** to provide intelligent, personalized recommendations. The AI powers:
+
+- **Mood-based recommendations**: Describe your mood and get perfectly matched content
+- **Smart content descriptions**: Engaging, personalized descriptions for movies and shows
+- **Review summaries**: AI-generated summaries of user reviews
+- **Personalized quiz**: Intelligent recommendations based on your quiz answers
+
+### Verifying the LLM Model
+
+To check if the LLM model is working correctly:
+
+```bash
+# Run the verification script
+node scripts/verify-llm-model.js
+
+# Or run the unit tests
+npm test -- --testPathPattern=openai.test.js --watchAll=false
+
+# Or run integration tests (requires API key)
+npm test -- --testPathPattern=openai.integration.test.js --watchAll=false
+```
+
+For detailed information about the LLM model status, see [LLM_MODEL_STATUS.md](./LLM_MODEL_STATUS.md).
 
 ## 🎯 Key Features & Usage
 
