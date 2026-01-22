@@ -76,7 +76,7 @@ const SignUp = () => {
     
     try {
       const displayName = `${formData.firstName} ${formData.lastName}`;
-      const { user, error } = await createUserAccount(formData.email, formData.password, displayName);
+      const { error } = await createUserAccount(formData.email, formData.password, displayName);
       
       if (error) {
         if (error.includes('email-already-in-use')) {
@@ -106,7 +106,7 @@ const SignUp = () => {
     setLoading(true);
     
     try {
-      const { user, profile, error } = await signUpWithGoogle();
+      const { error } = await signUpWithGoogle();
       
       if (error) {
         setErrors({ general: 'Google sign-up failed. Please try again.' });

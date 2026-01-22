@@ -3,16 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getUserProfile, 
-  updateUserProfile, 
   getUserWatchlist,
   getUserWatchedMovies,
-  updateUserStats,
   deleteUserAccount,
   updateUserProfileSimple,
   getProfilePhotoLocally,
   deleteProfilePhotoLocally
 } from '../services/firebase';
-import { updateProfile } from 'firebase/auth';
 import MovieCard from '../components/MovieCard';
 import './Profile.css';
 

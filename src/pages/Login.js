@@ -63,7 +63,7 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const { user, error } = await signInUser(formData.email, formData.password);
+      const { error } = await signInUser(formData.email, formData.password);
       
       if (error) {
         if (error.includes('user-not-found')) {
@@ -92,7 +92,7 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const { user, error } = await signInWithGoogle();
+      const { error } = await signInWithGoogle();
       
       if (error) {
         setErrors({ general: 'Google sign-in failed. Please try again.' });
