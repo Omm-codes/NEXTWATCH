@@ -102,13 +102,13 @@ const Admin = () => {
 
   const getTypeIcon = (type) => {
     const icons = {
-      general: '💬',
-      bug: '🐛',
-      feature: '💡',
-      feedback: '⭐',
-      support: '🛠️'
+      general: 'GEN',
+      bug: 'BUG',
+      feature: 'FEAT',
+      feedback: 'FDBK',
+      support: 'SUP'
     };
-    return icons[type] || '💬';
+    return icons[type] || 'GEN';
   };
 
   const getStatusColor = (status) => {
@@ -391,3 +391,4 @@ const Admin = () => {
 };
 
 export default Admin;
+

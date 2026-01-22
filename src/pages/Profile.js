@@ -59,10 +59,10 @@ const Profile = () => {
   ];
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'watchlist', label: 'Watchlist', icon: '📚' },
-    { id: 'watched', label: 'Watched', icon: '✅' },
-    { id: 'stats', label: 'Statistics', icon: '📊' }
+    { id: 'profile', label: 'Profile', icon: 'PRF' },
+    { id: 'watchlist', label: 'Watchlist', icon: 'WL' },
+    { id: 'watched', label: 'Watched', icon: 'WCH' },
+    { id: 'stats', label: 'Statistics', icon: 'STS' }
   ];
 
   useEffect(() => {
@@ -783,28 +783,28 @@ const Profile = () => {
               <h2>Your Statistics</h2>
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-icon">🎬</div>
+                  <div className="stat-icon">MOV</div>
                   <div className="stat-content">
                     <h3>{userStats.totalWatchedMovies}</h3>
                     <p>Movies Watched</p>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">📺</div>
+                  <div className="stat-icon">TV</div>
                   <div className="stat-content">
                     <h3>{userStats.totalWatchedTVShows}</h3>
                     <p>TV Shows Watched</p>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">📚</div>
+                  <div className="stat-icon">WL</div>
                   <div className="stat-content">
                     <h3>{watchlist.length}</h3>
                     <p>Watchlist Items</p>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">📅</div>
+                  <div className="stat-icon">JOIN</div>
                   <div className="stat-content">
                     <h3>{formatDate(userStats.joinDate)}</h3>
                     <p>Member Since</p>
@@ -820,3 +820,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

@@ -230,11 +230,19 @@ export const getCurrentWebSeries = (page = 1) => {
 // Enhanced recommendation function
 export const getRecommendationsByGenreAndYear = async (genres, startYear, endYear, mediaType = 'movie', page = 1) => {
   const endpoint = mediaType === 'movie' ? '/discover/movie' : '/discover/tv';
+  const dateFilters = mediaType === 'movie'
+    ? {
+        'primary_release_date.gte': `${startYear}-01-01`,
+        'primary_release_date.lte': `${endYear}-12-31`
+      }
+    : {
+        'first_air_date.gte': `${startYear}-01-01`,
+        'first_air_date.lte': `${endYear}-12-31`
+      };
   
   return getApiData(endpoint, {
     with_genres: genres.join(','),
-    'primary_release_date.gte': `${startYear}-01-01`,
-    'primary_release_date.lte': `${endYear}-12-31`,
+    ...dateFilters,
     sort_by: 'vote_average.desc',
     'vote_count.gte': 100,
     page

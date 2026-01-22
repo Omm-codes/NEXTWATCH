@@ -16,11 +16,11 @@ const Contact = () => {
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const contactTypes = [
-    { value: 'general', label: 'General Inquiry', icon: '💬' },
-    { value: 'bug', label: 'Bug Report', icon: '🐛' },
-    { value: 'feature', label: 'Feature Request', icon: '💡' },
-    { value: 'feedback', label: 'Feedback', icon: '⭐' },
-    { value: 'support', label: 'Technical Support', icon: '🛠️' }
+    { value: 'general', label: 'General Inquiry', icon: 'GEN' },
+    { value: 'bug', label: 'Bug Report', icon: 'BUG' },
+    { value: 'feature', label: 'Feature Request', icon: 'FEAT' },
+    { value: 'feedback', label: 'Feedback', icon: 'FDBK' },
+    { value: 'support', label: 'Technical Support', icon: 'SUP' }
   ];
 
   const handleInputChange = (e) => {
@@ -338,3 +338,4 @@ const Contact = () => {
 };
 
 export default Contact;
+

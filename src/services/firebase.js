@@ -49,7 +49,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -466,15 +466,17 @@ export const updateExistingUserProfile = async (user) => {
 // Add function to delete user account completely
 export const deleteUserAccount = async (userId) => {
   try {
-    // Delete user document from Firestore first
+    // Delete the Firebase Auth user first to avoid orphaning auth accounts.
+    const currentUser = auth.currentUser;
+    if (!currentUser || currentUser.uid !== userId) {
+      return { error: 'Unauthorized account deletion request' };
+    }
+
+    await deleteUser(currentUser);
+
+    // Delete user document from Firestore after auth deletion succeeds.
     const userRef = doc(db, 'users', userId);
     await deleteDoc(userRef);
-    
-    // Delete the Firebase Auth user
-    const currentUser = auth.currentUser;
-    if (currentUser && currentUser.uid === userId) {
-      await deleteUser(currentUser);
-    }
     
     return { error: null };
   } catch (error) {

@@ -1,17 +1,16 @@
-const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY;
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app } from './firebase';
+
+const functions = getFunctions(app);
+const groqChat = httpsCallable(functions, 'groqChat');
+
+const callGroqChat = async (payload) => {
+  const result = await groqChat(payload);
+  return result.data;
+};
 
 export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswers = null) => {
   try {
-    // Check if API key is available
-    if (!GROQ_API_KEY) {
-      console.error('Groq API key is not configured. Please check your .env file.');
-      return { 
-        titles: [], 
-        error: 'AI service not configured. Please restart the development server after setting up your .env file.' 
-      };
-    }
-
     let prompt;
     
     if (isQuiz && quizAnswers) {
@@ -24,43 +23,23 @@ export const getAIRecommendations = async (userInput, isQuiz = false, quizAnswer
 
     console.log('Calling Groq API with prompt:', prompt.substring(0, 100) + '...');
 
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a movie and TV show recommendation expert. Provide exactly 8-12 specific movie, TV show, or web series titles based on the user\'s preferences. Return only the titles, one per line, without any additional text, numbers, or explanations. Focus on popular, well-known titles that are likely to be found in movie databases.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 200,
-        temperature: 0.7
-      })
+    const { content } = await callGroqChat({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a movie and TV show recommendation expert. Provide exactly 8-12 specific movie, TV show, or web series titles based on the user\'s preferences. Return only the titles, one per line, without any additional text, numbers, or explanations. Focus on popular, well-known titles that are likely to be found in movie databases.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 200,
+      temperature: 0.7
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Groq API error details:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData
-      });
-      throw new Error(`Groq API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Groq API response received:', data);
-    
-    const aiResponse = data.choices[0]?.message?.content?.trim();
+    const aiResponse = content?.trim();
     
     if (!aiResponse) {
       throw new Error('No response from Groq');
@@ -122,35 +101,23 @@ export const generateSmartDescription = async (movieData, userPreferences = null
     
     const prompt = generateDescriptionPrompt(movieData, userPreferences);
 
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert film and TV critic who writes engaging, personalized content descriptions. Write compelling, concise descriptions that highlight what makes each title special. Keep descriptions between 100-150 words, focusing on emotional appeal and unique aspects. Avoid spoilers.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 200,
-        temperature: 0.8
-      })
+    const { content } = await callGroqChat({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert film and TV critic who writes engaging, personalized content descriptions. Write compelling, concise descriptions that highlight what makes each title special. Keep descriptions between 100-150 words, focusing on emotional appeal and unique aspects. Avoid spoilers.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 200,
+      temperature: 0.8
     });
 
-    if (!response.ok) {
-      throw new Error(`Groq API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const description = data.choices[0]?.message?.content?.trim();
+    const description = content?.trim();
     
     if (!description) {
       return { description: overview, error: null };
@@ -180,35 +147,23 @@ ${reviewTexts}
 
 Please provide a concise summary (2-3 sentences) that reflects the general consensus while highlighting both positive and negative aspects if present.`;
 
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a professional content reviewer who creates balanced, insightful summaries of user reviews. Focus on capturing the overall sentiment and key themes without revealing major spoilers.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 150,
-        temperature: 0.7
-      })
+    const { content } = await callGroqChat({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional content reviewer who creates balanced, insightful summaries of user reviews. Focus on capturing the overall sentiment and key themes without revealing major spoilers.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.7
     });
 
-    if (!response.ok) {
-      throw new Error(`Groq API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const summary = data.choices[0]?.message?.content?.trim();
+    const summary = content?.trim();
     
     return { summary, error: null };
   } catch (error) {
@@ -228,35 +183,23 @@ Overview: ${movieData.overview}
 
 Focus on the emotional appeal and how it matches their mood.`;
 
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert at matching content to viewer emotions. Create personalized, engaging highlights that connect movies/shows to specific moods and feelings.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 100,
-        temperature: 0.8
-      })
+    const { content } = await callGroqChat({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert at matching content to viewer emotions. Create personalized, engaging highlights that connect movies/shows to specific moods and feelings.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 100,
+      temperature: 0.8
     });
 
-    if (!response.ok) {
-      throw new Error(`Groq API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const highlight = data.choices[0]?.message?.content?.trim();
+    const highlight = content?.trim();
     
     return { highlight, error: null };
   } catch (error) {
