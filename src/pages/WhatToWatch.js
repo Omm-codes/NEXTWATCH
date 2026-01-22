@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
-import { searchMovies, getPopularMovies, getTrendingMovies, getGenres, getTVShowsByGenre, getPopularTVShows, getDistinctWebSeries, searchMultipleTitles, getEnhancedSearchResults } from '../services/api';
+import { getPopularMovies, getTrendingMovies, getTVShowsByGenre, getPopularTVShows, getDistinctWebSeries, getEnhancedSearchResults } from '../services/api';
 import { getAIRecommendations } from '../services/openai';
 import './WhatToWatch.css';
 

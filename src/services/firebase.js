@@ -21,22 +21,15 @@ import {
   arrayRemove,
   collection,
   query,
-  where,
   getDocs,
   deleteDoc,
   orderBy
 } from 'firebase/firestore';
 import { 
-  getStorage, 
-  ref, 
-  uploadBytes, 
-  getDownloadURL, 
-  deleteObject 
+  getStorage
 } from 'firebase/storage';
 import { 
-  getMessaging, 
-  getToken, 
-  onMessage 
+  getMessaging
 } from 'firebase/messaging';
 
 const firebaseConfig = {
