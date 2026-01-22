@@ -97,8 +97,6 @@ Provide a diverse mix of recommendations including movies, TV shows, and web ser
 // Add new function for generating smart content descriptions
 export const generateSmartDescription = async (movieData, userPreferences = null) => {
   try {
-    const { title, overview, genres, release_date, vote_average, media_type } = movieData;
-    
     const prompt = generateDescriptionPrompt(movieData, userPreferences);
 
     const { content } = await callGroqChat({
@@ -120,7 +118,7 @@ export const generateSmartDescription = async (movieData, userPreferences = null
     const description = content?.trim();
     
     if (!description) {
-      return { description: overview, error: null };
+      return { description: movieData.overview, error: null };
     }
 
     return { description, error: null };
@@ -244,9 +242,11 @@ Original Overview: ${overview}
 Make the description compelling and highlight what makes this ${contentType} special. Focus on emotional appeal, unique elements, and why someone should watch it. Write in an engaging, conversational tone.${userContext}`;
 };
 
-export default {
+const openaiService = {
   getAIRecommendations,
   generateSmartDescription,
   generateReviewSummary,
   generateMoodBasedHighlight
 };
+
+export default openaiService;

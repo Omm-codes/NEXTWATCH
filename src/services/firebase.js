@@ -79,7 +79,7 @@ export const createUserAccount = async (email, password, displayName) => {
     });
     
     // Create user profile in Firestore
-    const { profile, error } = await createUserProfile(userCredential.user);
+    const { profile } = await createUserProfile(userCredential.user);
     
     return { user: userCredential.user, profile, error: null };
   } catch (error) {
@@ -92,7 +92,7 @@ export const signInUser = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
     // Get existing user profile (don't create new one, just update last login)
-    const { profile, error } = await updateExistingUserProfile(userCredential.user);
+    const { profile } = await updateExistingUserProfile(userCredential.user);
     
     return { user: userCredential.user, profile, error: null };
   } catch (error) {
@@ -106,7 +106,7 @@ export const signInWithGoogle = async () => {
     const user = result.user;
     
     // Check if user exists, if not create profile, if yes update profile
-    const { profile, error } = await createUserProfile(user);
+    const { profile } = await createUserProfile(user);
     
     return { user, profile, error: null };
   } catch (error) {
@@ -121,7 +121,7 @@ export const signUpWithGoogle = async () => {
     const user = result.user;
     
     // For signup, always try to create or update profile
-    const { profile, error } = await createUserProfile(user);
+    const { profile } = await createUserProfile(user);
     
     return { user, profile, error: null };
   } catch (error) {
